@@ -1,11 +1,9 @@
-import { Button } from '@mui/material';
+import { Login } from '@/components';
 
 export default function Home() {
   return (
     <main>
-      <Button variant='contained'>
-        hello
-      </Button>
+      <Login />
     </main>
   );
 }

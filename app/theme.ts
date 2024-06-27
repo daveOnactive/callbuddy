@@ -32,5 +32,10 @@ export const theme = createTheme({
         },
       ],
     },
+    MuiTypography: {
+      defaultProps: {
+        color: "white",
+      },
+    },
   },
 });
