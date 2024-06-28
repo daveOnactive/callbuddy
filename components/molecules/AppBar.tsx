@@ -3,14 +3,18 @@ import { Avatar, Box, Button, IconButton } from "@mui/material";
 import MoreTimeRoundedIcon from '@mui/icons-material/MoreTimeRounded';
 import { useEffect } from "react";
 import { useModal } from "@/hooks";
-import { SelectGender } from "../features";
+import { IncomingCall, SelectGender } from "../features";
+import { pink } from "@mui/material/colors";
 
 export function AppBar() {
 
   const { showModal } = useModal()
 
   useEffect(() => {
-    showModal(<SelectGender />)
+    // showModal(<IncomingCall />, {
+    //   isFullScreen: true,
+    //   bgColor: pink[100]
+    // })
   }, [])
 
 

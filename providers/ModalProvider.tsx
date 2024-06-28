@@ -19,6 +19,8 @@ type IModalContext = {
   handleOpen: () => void;
   setModalContent: any;
   handleClose: () => void;
+  setIsFullScreen: any;
+  setBgColor: any;
 }
 
 export const ModalContext = createContext<Partial<IModalContext>>({});
@@ -28,22 +30,34 @@ export function ModalProvider({ children }: PropsWithChildren) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [modelContent, setModalContent] = useState<React.ReactNode | ''>(<></>)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+
+  const [bgColor, setBgColor] = useState('');
+
+  const bg = bgColor ? {
+    '& .MuiPaper-root': {
+      backgroundColor: bgColor
+    }
+  } : undefined;
 
   return (
     <ModalContext.Provider
       value={{
         handleOpen,
         setModalContent,
-        handleClose
+        handleClose,
+        setIsFullScreen,
+        setBgColor
       }}
     >
       <Dialog
         open={open}
+        fullScreen={isFullScreen}
         TransitionComponent={Transition}
         keepMounted
-        // onClose={handleClose}
+        onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
-        sx={(theme) => ({
+        sx={!isFullScreen ? (theme) => ({
           '& .MuiPaper-root': {
             width: { sm: '40% !important', xs: '100% !important' },
             padding: { sm: 3, xs: 2 },
@@ -55,7 +69,7 @@ export function ModalProvider({ children }: PropsWithChildren) {
               : '0px 4px 8px rgb(0 0 0 / 0.1)',
             color: theme.palette.mode === 'dark' ? grey[100] : grey[700],
           }
-        })}
+        }) : bg}
       >
         {modelContent}
       </Dialog>
