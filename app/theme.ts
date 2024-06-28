@@ -1,8 +1,21 @@
 "use client";
 import { createTheme } from "@mui/material";
-import { blue, pink } from "@mui/material/colors";
+import { pink } from "@mui/material/colors";
 
 export const theme = createTheme({
+  palette: {
+    primary: {
+      dark: "#1F719D",
+      main: pink[500],
+    },
+    background: {
+      default: pink[200],
+      paper: "white",
+    },
+    text: {
+      primary: "#fff",
+    },
+  },
   components: {
     MuiButton: {
       variants: [
@@ -28,6 +41,7 @@ export const theme = createTheme({
             "&:hover": {
               backgroundColor: pink[600],
             },
+            textTransform: "none",
           }),
         },
       ],
