@@ -1,4 +1,4 @@
-import { AppBar, BuddyCard, Tabs } from "@/components";
+import { AppBar, BuddyCard, StartCall, Tabs } from "@/components";
 import { Box } from "@mui/material";
 
 export default function Home() {
@@ -26,7 +26,7 @@ export default function Home() {
           ))
         }
       </Box>
-
+      <StartCall />
     </Box>
   )
 }
