@@ -95,6 +95,9 @@ export const theme = createTheme({
           }),
         },
       ],
+      defaultProps: {
+        disableElevation: true,
+      },
     },
     MuiTypography: {
       defaultProps: {
