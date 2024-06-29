@@ -1,6 +1,6 @@
 "use client";
 import { createTheme } from "@mui/material";
-import { green, pink, red } from "@mui/material/colors";
+import { green, grey, pink, red } from "@mui/material/colors";
 
 export const theme = createTheme({
   palette: {
@@ -101,7 +101,7 @@ export const theme = createTheme({
     },
     MuiTypography: {
       defaultProps: {
-        // color: "white",
+        color: grey[900],
       },
     },
   },
