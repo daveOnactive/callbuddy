@@ -73,8 +73,7 @@ export function InCall() {
   return (
     <Box sx={{
       width: '100%',
-      minHeight: '100vh',
-      height: 'fit-content',
+      height: '100vh',
       position: 'relative'
     }}>
       <Box
