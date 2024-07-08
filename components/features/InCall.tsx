@@ -49,12 +49,32 @@ export function InCall() {
       isMounted.current = true;
     }
 
-  }, [localStream])
+  }, [localStream]);
+
+  const localStreamBoxStyle = {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  }
+
+  const remoteStreamBoxStyle = {
+    position: 'absolute',
+    top: '5%',
+    right: '5%',
+    width: '35%',
+    height: '30%',
+    objectFit: 'cover',
+    borderRadius: '8px'
+  }
 
   return (
     <Box sx={{
       width: '100%',
-      height: '100vh',
+      minHeight: '100%',
+      height: 'fit-content',
       position: 'relative'
     }}>
       <Box
@@ -62,14 +82,7 @@ export function InCall() {
         ref={localStreamRef}
         autoPlay
         playsInline
-        sx={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover'
-        }}
+        sx={remoteStreamRef ? remoteStreamBoxStyle : localStreamBoxStyle}
       />
 
       <Box
@@ -77,15 +90,7 @@ export function InCall() {
         ref={remoteStreamRef}
         autoPlay
         playsInline
-        sx={{
-          position: 'absolute',
-          top: '5%',
-          right: '5%',
-          width: '35%',
-          height: '30%',
-          objectFit: 'cover',
-          borderRadius: '8px'
-        }}
+        sx={remoteStreamRef ? localStreamBoxStyle : remoteStreamBoxStyle}
       />
 
       <Box

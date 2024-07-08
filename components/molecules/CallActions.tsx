@@ -15,7 +15,7 @@ export function CallActions() {
         background: grey[900],
         width: '90%',
         position: 'absolute',
-        bottom: '3%',
+        bottom: '8%',
         borderRadius: '8px',
         left: '50%',
         transform: 'translateX(-50%)',
