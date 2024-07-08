@@ -25,9 +25,6 @@ const configuration = {
   iceCandidatePoolSize: 100,
 };
 
-// let localStream: MediaStream;
-// let remoteStream: MediaStream;
-
 export function WebRTCProvider({ children }: PropsWithChildren) {
   const [callId, setCallId] = useState('idjfhrryiw5wf');
   const [localStream, setLocalStream] = useState<MediaStream>();

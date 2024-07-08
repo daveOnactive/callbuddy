@@ -20,8 +20,6 @@ export function InCall() {
 
   const isJoinCall = !!joinCallId;
 
-  console.log({ remoteStream })
-
   useEffect(() => {
     if (localStreamRef?.current && localStream) {
       localStreamRef.current.srcObject = localStream as MediaProvider;
@@ -36,7 +34,7 @@ export function InCall() {
 
   useEffect(() => {
     openUserMedia?.();
-  }, []);
+  }, [openUserMedia]);
 
   useEffect(() => {
     if (!isJoinCall && localStream && isMounted.current === false) {
