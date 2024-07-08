@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "./theme";
-import { ModalProvider } from "@/providers";
+import { ModalProvider, WebRTCProvider } from "@/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +22,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider theme={theme}>
           <ModalProvider>
-            {children}
+            <WebRTCProvider>
+              {children}
+            </WebRTCProvider>
           </ModalProvider>
         </ThemeProvider>
       </body>
