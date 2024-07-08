@@ -12,7 +12,7 @@ export function InCall() {
   const localStreamRef = useRef<HTMLVideoElement>();
   const remoteStreamRef = useRef<HTMLVideoElement>();
 
-  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  const [windowHeight, setWindowHeight] = useState(0);
 
   const isMounted = useRef(false);
 
