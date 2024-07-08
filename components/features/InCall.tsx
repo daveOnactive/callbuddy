@@ -55,6 +55,10 @@ export function InCall() {
 
   useEffect(() => {
 
+    if (windowHeight === 0 && window) {
+      setWindowHeight(window.innerHeight);
+    }
+
     const handleResize = () => {
       setWindowHeight(window.innerHeight);
     };
