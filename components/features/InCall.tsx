@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import { CallActions } from "../molecules";
 import { pink } from "@mui/material/colors";
 import { useWebRTC } from "@/hooks";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 
 export function InCall() {
@@ -11,6 +11,8 @@ export function InCall() {
 
   const localStreamRef = useRef<HTMLVideoElement>();
   const remoteStreamRef = useRef<HTMLVideoElement>();
+
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
   const isMounted = useRef(false);
 
@@ -51,6 +53,19 @@ export function InCall() {
 
   }, [localStream]);
 
+  useEffect(() => {
+
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const localStreamBoxStyle = {
     position: 'absolute',
     left: 0,
@@ -67,13 +82,14 @@ export function InCall() {
     width: '35%',
     height: '30%',
     objectFit: 'cover',
-    borderRadius: '8px'
+    borderRadius: '8px',
+    zIndex: 3
   }
 
   return (
     <Box sx={{
       width: '100%',
-      height: '100vh',
+      height: windowHeight,
       position: 'relative'
     }}>
       <Box
@@ -81,7 +97,7 @@ export function InCall() {
         ref={localStreamRef}
         autoPlay
         playsInline
-        sx={remoteStreamRef ? remoteStreamBoxStyle : localStreamBoxStyle}
+        sx={remoteStream ? remoteStreamBoxStyle : localStreamBoxStyle}
       />
 
       <Box
@@ -89,7 +105,7 @@ export function InCall() {
         ref={remoteStreamRef}
         autoPlay
         playsInline
-        sx={remoteStreamRef ? localStreamBoxStyle : remoteStreamBoxStyle}
+        sx={remoteStream ? localStreamBoxStyle : remoteStreamBoxStyle}
       />
 
       <Box
