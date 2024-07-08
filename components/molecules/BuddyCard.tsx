@@ -4,8 +4,14 @@ import { green, grey, pink, yellow } from "@mui/material/colors";
 import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
+import { useRouter } from "next/navigation";
+import { useWebRTC } from "@/hooks";
 
 export function BuddyCard() {
+  const { push } = useRouter();
+
+  const { joinCall } = useWebRTC();
+
   return (
     <Card
       sx={(theme) => ({
@@ -87,7 +93,14 @@ export function BuddyCard() {
           width: '100%',
           mt: 1
         }}>
-          <Button size='small' variant="contained">
+          <Button
+            size='small'
+            variant="contained"
+            onClick={() => {
+              push('incall?joinCallId=kfnrnginrignring');
+              // joinCall?.('kfnrnginrignring')
+            }}
+          >
             <AddIcCallRoundedIcon fontSize="small" />
           </Button>
         </Box>
