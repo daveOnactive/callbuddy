@@ -34,7 +34,7 @@ export function InCall() {
 
   useEffect(() => {
     openUserMedia?.();
-  }, [openUserMedia]);
+  }, []);
 
   useEffect(() => {
     if (!isJoinCall && localStream && isMounted.current === false) {
