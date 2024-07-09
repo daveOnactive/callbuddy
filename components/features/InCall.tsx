@@ -38,13 +38,6 @@ export function InCall() {
     if (localStreamRef?.current && localStream) {
       localStreamRef.current.srcObject = localStream as MediaProvider;
     }
-
-    return () => {
-      // Cleanup on component unmount
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-      }
-    };
   }, [localStream])
 
   useEffect(() => {
@@ -55,6 +48,7 @@ export function InCall() {
 
   useEffect(() => {
     openUserMedia?.();
+
   }, []);
 
   useEffect(() => {
@@ -120,6 +114,7 @@ export function InCall() {
         ref={localStreamRef}
         autoPlay
         playsInline
+        muted
         sx={remoteStream ? remoteStreamBoxStyle : localStreamBoxStyle}
       />
 
@@ -128,6 +123,7 @@ export function InCall() {
         ref={remoteStreamRef}
         autoPlay
         playsInline
+        muted
         sx={remoteStream ? localStreamBoxStyle : remoteStreamBoxStyle}
       />
 

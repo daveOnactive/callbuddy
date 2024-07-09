@@ -8,15 +8,15 @@ export const WebRTCContext = createContext<Partial<{
   remoteStream: MediaStream;
   localStream: MediaStream;
   createCall: () => void;
-  openUserMedia: () => void;
+  openUserMedia: (deviceId?: string) => void;
   joinCall: (id: string) => void;
-  callAudio(): void;
-  toggleCamera(): void;
+  callAudio: () => void;
+  toggleCamera: () => void;
   isMuted: boolean;
   isOffCam: boolean;
   isBackCamera: boolean;
-  switchCamera(): void;
-  endCall(): void;
+  switchCamera: () => void;
+  endCall: () => void;
 }>>({});
 
 const configuration = {
@@ -45,7 +45,7 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
   async function openUserMedia(deviceId?: string) {
     const constraints = {
-      video: deviceId ? { deviceId: { exact: deviceId } } : true,
+      video: true,
       audio: true,
     };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -192,9 +192,13 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   };
 
   function endCall() {
-    if (!localStream) {
-      return;
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
     }
+    // localStream.getTracks().forEach(track => track.stop());
+    // remoteStream.getTracks().forEach(track => track.stop());
+
     setLocalStream(undefined);
     setRemoteStream(undefined);
     setIsMuted(false);
