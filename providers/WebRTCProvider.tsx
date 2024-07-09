@@ -40,7 +40,6 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   const [isBackCamera, setIsBackCamera] = useState(false);
 
   const localStreamRef = useRef<HTMLVideoElement>();
-  const remoteStreamRef = useRef<HTMLVideoElement>();
 
   const { push } = useRouter();
 
@@ -55,6 +54,12 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
       },
     };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    if (isMuted) {
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = !track.enabled;
+      });
+    }
 
     setLocalStream(stream);
 
@@ -118,10 +123,6 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
       const [remoteStream] = event.streams;
       setRemoteStream(remoteStream);
-
-      if (remoteStreamRef.current) {
-        remoteStreamRef.current.srcObject = remoteStream;
-      }
     });
 
     onSnapshot(callRef, async snapshot => {
@@ -170,9 +171,6 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
         const [remoteStream] = event.streams;
         setRemoteStream(remoteStream);
-        if (remoteStreamRef.current) {
-          remoteStreamRef.current.srcObject = remoteStream;
-        }
       });
 
       const calleeCandidatesCollection = collection(callRef, 'calleeCandidates');
@@ -225,10 +223,6 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
     setIsBackCamera(false);
     setIsOffCam(false);
     push('/home');
-
-    console.log({
-      localStream
-    })
   };
 
   function callAudio() {
@@ -242,7 +236,7 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   }
 
   async function switchCamera() {
-    if (isMuted || isOffCam) return;
+    if (isOffCam) return;
 
     if (localStream) {
       localStream.getTracks().forEach(track => track.stop());
