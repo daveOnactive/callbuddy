@@ -1,10 +1,10 @@
 import { InCall } from "@/components";
-import { Box } from "@mui/material";
+import { WebRTCProvider } from "@/providers";
 
 export default function Page() {
   return (
-    <Box>
+    <WebRTCProvider>
       <InCall />
-    </Box>
+    </WebRTCProvider>
   )
 }
