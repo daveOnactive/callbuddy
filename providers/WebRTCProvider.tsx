@@ -1,5 +1,5 @@
 'use client'
-import { createContext, PropsWithChildren, useEffect, useState } from "react";
+import { createContext, PropsWithChildren, useEffect, useRef, useState } from "react";
 import { collection, addDoc, doc, setDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from "@/app/firebase";
 import { useRouter } from "next/navigation";
@@ -8,15 +8,15 @@ export const WebRTCContext = createContext<Partial<{
   remoteStream: MediaStream;
   localStream: MediaStream;
   createCall: () => void;
-  openUserMedia: (deviceId?: string) => void;
   joinCall: (id: string) => void;
   callAudio: () => void;
   toggleCamera: () => void;
   isMuted: boolean;
   isOffCam: boolean;
-  isBackCamera: boolean;
   switchCamera: () => void;
   endCall: () => void;
+  localStreamRef: any;
+  remoteStreamRef: any;
 }>>({});
 
 const configuration = {
@@ -39,19 +39,38 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   const [isOffCam, setIsOffCam] = useState(false);
   const [isBackCamera, setIsBackCamera] = useState(false);
 
-  const [currentDeviceId, setCurrentDeviceId] = useState<string>();
+  const localStreamRef = useRef<HTMLVideoElement>();
+  const remoteStreamRef = useRef<HTMLVideoElement>();
 
   const { push } = useRouter();
 
-  async function openUserMedia(deviceId?: string) {
+
+  async function openUserMedia(front = true) {
     const constraints = {
-      video: true,
-      audio: true,
+      video: { facingMode: front ? "user" : "environment" },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
     };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
     setLocalStream(stream);
+
+    if (localStreamRef?.current) {
+      localStreamRef.current.srcObject = stream;
+    }
   }
+
+  useEffect(() => {
+    openUserMedia?.();
+    return () => {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+    }
+  }, []);
 
   async function createCall() {
 
@@ -99,6 +118,10 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
       const [remoteStream] = event.streams;
       setRemoteStream(remoteStream);
+
+      if (remoteStreamRef.current) {
+        remoteStreamRef.current.srcObject = remoteStream;
+      }
     });
 
     onSnapshot(callRef, async snapshot => {
@@ -147,6 +170,9 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
         const [remoteStream] = event.streams;
         setRemoteStream(remoteStream);
+        if (remoteStreamRef.current) {
+          remoteStreamRef.current.srcObject = remoteStream;
+        }
       });
 
       const calleeCandidatesCollection = collection(callRef, 'calleeCandidates');
@@ -191,20 +217,18 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
     }
   };
 
-  function endCall() {
-
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-    }
-    // localStream.getTracks().forEach(track => track.stop());
-    // remoteStream.getTracks().forEach(track => track.stop());
-
+  async function endCall() {
+    localStream?.getTracks().forEach(track => track.stop());
     setLocalStream(undefined);
     setRemoteStream(undefined);
     setIsMuted(false);
     setIsBackCamera(false);
     setIsOffCam(false);
     push('/home');
+
+    console.log({
+      localStream
+    })
   };
 
   function callAudio() {
@@ -220,28 +244,13 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   async function switchCamera() {
     if (isMuted || isOffCam) return;
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-      console.log('enumerateDevices() not supported.');
-      return;
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
     }
 
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    await openUserMedia(isBackCamera);
 
-      if (videoDevices.length > 1) {
-        const newDeviceId = videoDevices.find(device => device.deviceId !== currentDeviceId)?.deviceId || videoDevices[0].deviceId;
-
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-        }
-
-        setCurrentDeviceId(newDeviceId);
-        await openUserMedia(newDeviceId);
-      }
-    } catch (error) {
-      console.error('Error switching camera.', error);
-    }
+    setIsBackCamera(!isBackCamera);
   }
 
   function toggleCamera() {
@@ -278,15 +287,14 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
         localStream,
         remoteStream,
         createCall,
-        openUserMedia,
         joinCall,
         callAudio,
         toggleCamera,
         switchCamera,
         isMuted,
         isOffCam,
-        isBackCamera,
         endCall,
+        localStreamRef
       }}
     >
       {children}

@@ -10,7 +10,6 @@ export function InCall() {
   const {
     localStream,
     createCall,
-    openUserMedia,
     remoteStream,
     joinCall,
     isMuted,
@@ -18,11 +17,10 @@ export function InCall() {
     isOffCam,
     toggleCamera,
     switchCamera,
-    endCall
+    endCall,
+    localStreamRef,
+    remoteStreamRef
   } = useContext(WebRTCContext);
-
-  const localStreamRef = useRef<HTMLVideoElement>();
-  const remoteStreamRef = useRef<HTMLVideoElement>();
 
   const [windowHeight, setWindowHeight] = useState(0);
 
@@ -33,23 +31,6 @@ export function InCall() {
   const joinCallId = params.get('joinCallId') as string
 
   const isJoinCall = !!joinCallId;
-
-  useEffect(() => {
-    if (localStreamRef?.current && localStream) {
-      localStreamRef.current.srcObject = localStream as MediaProvider;
-    }
-  }, [localStream])
-
-  useEffect(() => {
-    if (remoteStreamRef?.current) {
-      remoteStreamRef.current.srcObject = remoteStream as MediaProvider;
-    }
-  }, [remoteStream])
-
-  useEffect(() => {
-    openUserMedia?.();
-
-  }, []);
 
   useEffect(() => {
     if (!isJoinCall && localStream && isMounted.current === false) {
@@ -114,7 +95,6 @@ export function InCall() {
         ref={localStreamRef}
         autoPlay
         playsInline
-        muted
         sx={remoteStream ? remoteStreamBoxStyle : localStreamBoxStyle}
       />
 
@@ -123,7 +103,6 @@ export function InCall() {
         ref={remoteStreamRef}
         autoPlay
         playsInline
-        muted
         sx={remoteStream ? localStreamBoxStyle : remoteStreamBoxStyle}
       />
 

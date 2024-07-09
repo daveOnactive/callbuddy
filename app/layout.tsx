@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "./theme";
-import { ModalProvider, WebRTCProvider } from "@/providers";
+import { ModalProvider } from "@/providers";
 import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,9 +24,7 @@ export default function RootLayout({
         <Suspense>
           <ThemeProvider theme={theme}>
             <ModalProvider>
-              <WebRTCProvider>
-                {children}
-              </WebRTCProvider>
+              {children}
             </ModalProvider>
           </ThemeProvider>
         </Suspense>
