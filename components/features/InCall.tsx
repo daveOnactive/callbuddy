@@ -18,8 +18,7 @@ export function InCall() {
     toggleCamera,
     switchCamera,
     endCall,
-    localStreamRef,
-    remoteStreamRef
+    localStreamRef
   } = useContext(WebRTCContext);
 
   const [windowHeight, setWindowHeight] = useState(0);
@@ -28,9 +27,18 @@ export function InCall() {
 
   const params = useSearchParams();
 
+  const remoteStreamRef = useRef<HTMLVideoElement>();
+
   const joinCallId = params.get('joinCallId') as string
 
   const isJoinCall = !!joinCallId;
+
+  useEffect(() => {
+    console.log(remoteStreamRef.current, remoteStream)
+    if (remoteStreamRef.current && remoteStream) {
+      remoteStreamRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream])
 
   useEffect(() => {
     if (!isJoinCall && localStream && isMounted.current === false) {
