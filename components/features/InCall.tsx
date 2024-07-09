@@ -34,7 +34,6 @@ export function InCall() {
   const isJoinCall = !!joinCallId;
 
   useEffect(() => {
-    console.log(remoteStreamRef.current, remoteStream)
     if (remoteStreamRef.current && remoteStream) {
       remoteStreamRef.current.srcObject = remoteStream;
     }
@@ -103,6 +102,7 @@ export function InCall() {
         ref={localStreamRef}
         autoPlay
         playsInline
+        muted
         sx={remoteStream ? remoteStreamBoxStyle : localStreamBoxStyle}
       />
 

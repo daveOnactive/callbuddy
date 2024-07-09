@@ -38,13 +38,22 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   const [isMuted, setIsMuted] = useState(false);
   const [isOffCam, setIsOffCam] = useState(false);
   const [isBackCamera, setIsBackCamera] = useState(false);
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>();
 
   const localStreamRef = useRef<HTMLVideoElement>();
 
   const { push } = useRouter();
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    setPeerConnection(new RTCPeerConnection(configuration));
+    console.log('Create PeerConnection with configuration: ', configuration);
+  }, []);
 
-  async function openUserMedia(front = true) {
+
+  async function openUserMedia(front = true, isStreaming?: boolean) {
     const constraints = {
       video: { facingMode: front ? "user" : "environment" },
       audio: {
@@ -66,6 +75,12 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
     if (localStreamRef?.current) {
       localStreamRef.current.srcObject = stream;
     }
+
+    if (isStreaming && peerConnection) {
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+      });
+    }
   }
 
   useEffect(() => {
@@ -79,13 +94,11 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
   async function createCall() {
 
-    if (typeof window === "undefined") {
+    if (!peerConnection) {
       return;
     }
 
-    const peerConnection = new RTCPeerConnection(configuration);
-
-    registerPeerConnectionListeners(peerConnection);
+    registerPeerConnectionListeners();
 
     localStream?.getTracks().forEach(track => {
       peerConnection?.addTrack(track, localStream);
@@ -147,7 +160,7 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   };
 
   async function joinCall(_id: string) {
-    if (typeof window === "undefined") {
+    if (!peerConnection) {
       return;
     }
 
@@ -156,11 +169,8 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
     const callSnapshot = await getDoc(callRef);
 
     if (callSnapshot.exists()) {
-      const peerConnection = new RTCPeerConnection(configuration);
 
-      console.log('Create PeerConnection with configuration: ', configuration);
-
-      registerPeerConnectionListeners(peerConnection);
+      registerPeerConnectionListeners();
 
       localStream?.getTracks().forEach(track => {
         peerConnection.addTrack(track, localStream);
@@ -254,21 +264,21 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
     });
   }
 
-  function registerPeerConnectionListeners(peerConnection: RTCPeerConnection) {
-    peerConnection.addEventListener('icegatheringstatechange', () => {
+  function registerPeerConnectionListeners() {
+    peerConnection?.addEventListener('icegatheringstatechange', () => {
       console.log(
         `ICE gathering state changed: ${peerConnection.iceGatheringState}`);
     });
 
-    peerConnection.addEventListener('connectionstatechange', () => {
+    peerConnection?.addEventListener('connectionstatechange', () => {
       console.log(`Connection state change: ${peerConnection.connectionState}`);
     });
 
-    peerConnection.addEventListener('signalingstatechange', () => {
+    peerConnection?.addEventListener('signalingstatechange', () => {
       console.log(`Signaling state change: ${peerConnection.signalingState}`);
     });
 
-    peerConnection.addEventListener('iceconnectionstatechange ', () => {
+    peerConnection?.addEventListener('iceconnectionstatechange ', () => {
       console.log(
         `ICE connection state change: ${peerConnection.iceConnectionState}`);
     });
