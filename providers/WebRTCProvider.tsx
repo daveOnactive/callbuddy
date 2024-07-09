@@ -2,6 +2,7 @@
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
 import { collection, addDoc, doc, setDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from "@/app/firebase";
+import { useRouter } from "next/navigation";
 
 export const WebRTCContext = createContext<Partial<{
   remoteStream: MediaStream;
@@ -9,9 +10,14 @@ export const WebRTCContext = createContext<Partial<{
   createCall: () => void;
   openUserMedia: () => void;
   joinCall: (id: string) => void;
+  callAudio(): void;
+  toggleCamera(): void;
+  isMuted: boolean;
+  isOffCam: boolean;
+  isBackCamera: boolean;
+  switchCamera(): void;
+  endCall(): void;
 }>>({});
-
-const constraints = { video: true, audio: false };
 
 const configuration = {
   iceServers: [
@@ -29,8 +35,19 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   const [callId, setCallId] = useState('idjfhrryiw5wf');
   const [localStream, setLocalStream] = useState<MediaStream>();
   const [remoteStream, setRemoteStream] = useState<MediaStream>();
+  const [isMuted, setIsMuted] = useState(false);
+  const [isOffCam, setIsOffCam] = useState(false);
+  const [isBackCamera, setIsBackCamera] = useState(false);
 
-  async function openUserMedia() {
+  const [currentDeviceId, setCurrentDeviceId] = useState<string>();
+
+  const { push } = useRouter();
+
+  async function openUserMedia(deviceId?: string) {
+    const constraints = {
+      video: deviceId ? { deviceId: { exact: deviceId } } : true,
+      audio: true,
+    };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
     setLocalStream(stream);
@@ -175,15 +192,59 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   };
 
   function endCall() {
-
+    if (!localStream) {
+      return;
+    }
+    setLocalStream(undefined);
+    setRemoteStream(undefined);
+    setIsMuted(false);
+    setIsBackCamera(false);
+    setIsOffCam(false);
+    push('/home');
   };
 
   function callAudio() {
-
+    // if (!remoteStream) {
+    //   return;
+    // }
+    localStream?.getAudioTracks().forEach((track) => {
+      track.enabled = !track.enabled;
+      setIsMuted(!track.enabled);
+    });
   }
 
-  function callVideo() {
+  async function switchCamera() {
+    if (isMuted || isOffCam) return;
 
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+      console.log('enumerateDevices() not supported.');
+      return;
+    }
+
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+      if (videoDevices.length > 1) {
+        const newDeviceId = videoDevices.find(device => device.deviceId !== currentDeviceId)?.deviceId || videoDevices[0].deviceId;
+
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+        }
+
+        setCurrentDeviceId(newDeviceId);
+        await openUserMedia(newDeviceId);
+      }
+    } catch (error) {
+      console.error('Error switching camera.', error);
+    }
+  }
+
+  function toggleCamera() {
+    localStream?.getVideoTracks().forEach((track) => {
+      track.enabled = !track.enabled;
+      setIsOffCam(!isOffCam);
+    });
   }
 
   function registerPeerConnectionListeners(peerConnection: RTCPeerConnection) {
@@ -215,6 +276,13 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
         createCall,
         openUserMedia,
         joinCall,
+        callAudio,
+        toggleCamera,
+        switchCamera,
+        isMuted,
+        isOffCam,
+        isBackCamera,
+        endCall,
       }}
     >
       {children}

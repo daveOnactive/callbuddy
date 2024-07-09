@@ -2,12 +2,24 @@
 import { Box } from "@mui/material";
 import { CallActions } from "../molecules";
 import { pink } from "@mui/material/colors";
-import { useWebRTC } from "@/hooks";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
+import { WebRTCContext } from "@/providers";
 
 export function InCall() {
-  const { localStream, createCall, openUserMedia, remoteStream, joinCall } = useWebRTC();
+  const {
+    localStream,
+    createCall,
+    openUserMedia,
+    remoteStream,
+    joinCall,
+    isMuted,
+    callAudio,
+    isOffCam,
+    toggleCamera,
+    switchCamera,
+    endCall
+  } = useContext(WebRTCContext);
 
   const localStreamRef = useRef<HTMLVideoElement>();
   const remoteStreamRef = useRef<HTMLVideoElement>();
@@ -26,6 +38,13 @@ export function InCall() {
     if (localStreamRef?.current && localStream) {
       localStreamRef.current.srcObject = localStream as MediaProvider;
     }
+
+    return () => {
+      // Cleanup on component unmount
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+    };
   }, [localStream])
 
   useEffect(() => {
@@ -128,7 +147,16 @@ export function InCall() {
         15m
       </Box>
 
-      <CallActions />
+      <CallActions
+        actions={{
+          isMuted: !!isMuted,
+          isOffCam: !!isOffCam
+        }}
+        toggleMic={callAudio}
+        toggleCamera={toggleCamera}
+        switchCamera={switchCamera}
+        endCall={endCall}
+      />
     </Box>
   )
 }

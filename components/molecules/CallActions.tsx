@@ -5,7 +5,18 @@ import MicOffRoundedIcon from '@mui/icons-material/MicOffRounded';
 import CallEndRoundedIcon from '@mui/icons-material/CallEndRounded';
 import { grey } from "@mui/material/colors";
 
-export function CallActions() {
+type IProps = {
+  actions: {
+    isMuted: boolean;
+    isOffCam: boolean;
+  };
+  toggleMic?: () => void;
+  toggleCamera?: () => void;
+  switchCamera?: () => void;
+  endCall?: () => void;
+}
+
+export function CallActions({ actions: { isMuted, isOffCam }, toggleMic, toggleCamera, switchCamera, endCall }: IProps) {
   return (
     <Box
       sx={{
@@ -22,27 +33,34 @@ export function CallActions() {
         p: 1
       }}
     >
-      <IconButton>
+      <IconButton
+        onClick={switchCamera}
+      >
         <SwitchCameraRoundedIcon sx={{
           color: "white"
         }} />
       </IconButton>
       <IconButton
+        onClick={toggleCamera}
         sx={{
-          background: 'white !important'
+          background: isOffCam ? "white !important" : 'unset',
         }}
-        disableRipple
       >
         <NoPhotographyRoundedIcon sx={{
-          color: grey[900]
+          color: !isOffCam ? "white" : grey[900],
         }} />
       </IconButton>
-      <IconButton>
+      <IconButton
+        onClick={toggleMic}
+        sx={{
+          background: isMuted ? "white !important" : 'unset',
+        }}
+      >
         <MicOffRoundedIcon sx={{
-          color: "white"
+          color: !isMuted ? "white" : grey[900],
         }} />
       </IconButton>
-      <Button endIcon={<CallEndRoundedIcon />} variant="contained" size='small' color='error'>
+      <Button onClick={endCall} endIcon={<CallEndRoundedIcon />} variant="contained" size='small' color='error'>
         End
       </Button>
     </Box>
