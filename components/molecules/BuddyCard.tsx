@@ -1,16 +1,13 @@
 'use client'
 import { Avatar, Box, Button, Card, Typography } from "@mui/material";
-import { green, grey, pink, yellow } from "@mui/material/colors";
+import { grey, pink, yellow } from "@mui/material/colors";
 import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
 import { useRouter } from "next/navigation";
-import { useWebRTC } from "@/hooks";
 
 export function BuddyCard() {
   const { push } = useRouter();
-
-  const { joinCall } = useWebRTC();
 
   return (
     <Card
@@ -98,7 +95,6 @@ export function BuddyCard() {
             variant="contained"
             onClick={() => {
               push('incall?joinCallId=kfnrnginrignring');
-              // joinCall?.('kfnrnginrignring')
             }}
           >
             <AddIcCallRoundedIcon fontSize="small" />
