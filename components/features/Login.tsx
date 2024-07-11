@@ -1,9 +1,14 @@
-import { Box, Button, Typography } from "@mui/material";
+'use client'
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import Image from "next/image";
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import Logo from '../../public/logo.png';
+import { useContext } from "react";
+import { AuthenticationContext } from "@/providers";
 
 export function Login() {
+  const { fastLogin, isCreatingUser } = useContext(AuthenticationContext);
+
   return (
     <Box
       sx={{
@@ -31,7 +36,7 @@ export function Login() {
           objectFit: 'contain'
         }}
       >
-        <source src="" type="video/mp4" />
+        <source src="https://el.phncdn.com/pics/gifs/026/643/752/26643752a.mp4" type="video/mp4" />
       </Box>
       <Box
         sx={{
@@ -51,12 +56,34 @@ export function Login() {
           height={100}
         />
 
-        <Typography my={2} variant="h6">Jerk Buddy</Typography>
+        <Typography my={2} variant="h6" color='white'>Call Buddy</Typography>
 
-        <Button fullWidth size="large" variant="contained">
-          <BoltRoundedIcon fontSize='large' />
+        <Button
+          sx={{
+            mx: 'auto',
+            display: 'flex',
+            width: '80%'
+          }}
+          fullWidth
+          size="large"
+          variant="contained"
+          onClick={fastLogin}
+          disabled={isCreatingUser}
+        >
+
+          {
+            isCreatingUser ? (
+              <CircularProgress
+                sx={{
+                  color: 'white'
+                }}
+              />
+            ) : (
+              <BoltRoundedIcon fontSize='large' />
+            )
+          }
         </Button>
-        <Typography mt={1} variant="body1">Fast Login</Typography>
+        <Typography color='white' mt={1} variant="body1">Fast Login</Typography>
       </Box>
     </Box>
   )
