@@ -5,6 +5,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { db } from "@/app/firebase";
 import { User } from "@/types";
 import { useSnapshot, useUpdateDoc } from "@/hooks";
+import { getActiveUntil } from "@/helpers";
 
 export const AuthenticationContext = createContext<Partial<{
   isCreatingUser: boolean;
@@ -57,15 +58,18 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  useEffect(() => {
-    if (isMounted.current === false && data && data.lastLogin !== new Date().toISOString()) {
-      mutate(data.id, {
-        lastLogin: new Date().toISOString()
-      });
+  // useEffect(() => {
+  //   const isActive = data && new Date(data.lastLogin) === getActiveUntil(data.lastLogin);
 
-      isMounted.current = true;
-    }
-  }, [data]);
+
+  //   if (isMounted.current === false && data && data.lastLogin !== new Date().toISOString()) {
+  //     mutate(data.id, {
+  //       lastLogin: new Date().toISOString()
+  //     });
+
+  //     isMounted.current = true;
+  //   }
+  // }, [data]);
 
   async function fastLogin() {
 
@@ -91,6 +95,7 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
       push('/home');
 
     } catch (err: any) {
+      setIsCreatingUser(false);
       throw new Error(err.message)
     } finally {
       setIsCreatingUser(false);

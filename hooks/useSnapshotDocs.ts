@@ -11,6 +11,7 @@ import {
   OrderByDirection,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { useAlert } from "./useAlert";
 
 type IProps = {
   path: string;
@@ -25,24 +26,40 @@ type IProps = {
 export function useSnapshotDocs<T>({ path, queryOpt }: IProps) {
   const [data, setData] = useState<T[]>();
 
-  useEffect(() => {
-    const dataRef = collection(db, path);
+  const { showNotification } = useAlert();
 
-    const queryRef = queryOpt
-      ? query(dataRef, orderBy(queryOpt?.orderBy as string, queryOpt.order))
-      : undefined;
+  async function getData() {
+    try {
+      const dataRef = collection(db, path);
 
-    const ref = queryRef || dataRef;
+      const queryRef = queryOpt
+        ? query(
+            dataRef,
+            orderBy(queryOpt.orderBy as unknown as FieldPath, queryOpt.order),
+          )
+        : undefined;
 
-    onSnapshot(ref, async (snapshot) => {
-      const assets: T[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        assets.push({ ...data, id: doc.id } as T);
+      const ref = queryRef || dataRef;
+
+      onSnapshot(ref, async (snapshot) => {
+        const assets: T[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          assets.push({ ...data, id: doc.id } as T);
+        });
+        setData(assets);
       });
-      setData(assets);
-    });
-  }, [queryOpt?.value]);
+    } catch (err: any) {
+      showNotification({
+        message: err.message,
+        type: "error",
+      });
+    }
+  }
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   return {
     data,

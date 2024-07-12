@@ -4,6 +4,7 @@ import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
 import { User } from "@/types";
+import { getActiveUntil } from "@/helpers";
 
 type IProp = {
   user?: User;
@@ -13,12 +14,11 @@ type IProp = {
 function getStatus(user?: User) {
   if (!user) return;
 
-  const currentDateTime = new Date(user.lastLogin);
-  const activeUntil = new Date(currentDateTime.getTime() + 3 * 60 * 1000);
+  const activeUntil = getActiveUntil(user.lastLogin);
 
   if (user.incall) return 'incall';
 
-  if (activeUntil > new Date()) return 'active';
+  if (activeUntil) return 'active';
 
   return 'offline';
 }
