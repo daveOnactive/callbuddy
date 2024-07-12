@@ -5,7 +5,7 @@ export type User = {
   avatarUrl: string;
   name: string;
   minutesLeft: string;
-  rank: string;
+  rank: number;
   incall: boolean;
   gender: string;
   lastLogin: string;

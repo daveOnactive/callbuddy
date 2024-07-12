@@ -1,6 +1,5 @@
-import { Avatar, Box, Button, Card, Typography } from "@mui/material";
+import { Avatar, Box, Button, Card, Rating, Typography } from "@mui/material";
 import { green, grey, pink, red, yellow } from "@mui/material/colors";
-import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
 import { User } from "@/types";
@@ -95,18 +94,10 @@ export function BuddyCard({ user, onClick }: IProp) {
           <Face6RoundedIcon color='primary' />
           <span>{user?.name}</span>
         </Typography>
-        <Typography
-          color='black'
-          variant="body2"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: .1
-          }}
-        >
-          <StarOutlineRoundedIcon color='primary' />
-          <span>{user?.rank}</span>
-        </Typography>
+
+        <Rating sx={{
+          my: .5
+        }} name="Rating" value={3} readOnly />
 
         <Box sx={{
           display: 'flex',
