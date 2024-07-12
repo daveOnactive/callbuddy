@@ -97,7 +97,7 @@ export function BuddyCard({ user, onClick }: IProp) {
 
         <Rating sx={{
           my: .5
-        }} name="Rating" value={3} readOnly />
+        }} name="Rating" value={user?.rank} readOnly />
 
         <Box sx={{
           display: 'flex',

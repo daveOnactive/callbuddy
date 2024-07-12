@@ -44,7 +44,7 @@ export function BuyTime() {
         height: '100%'
       }} variant="outlined">
         <Typography component="legend">Rating</Typography>
-        <Rating name="Rating" value={3} readOnly />
+        <Rating name="Rating" value={user?.rank} readOnly />
       </Card>
 
     </Box>
