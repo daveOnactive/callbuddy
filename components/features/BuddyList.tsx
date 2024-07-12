@@ -1,14 +1,12 @@
 'use client'
-
-import { useSnapshotDocs } from "@/hooks"
-import { User } from "@/types";
 import { Box } from "@mui/material";
 import { BuddyCard } from "../molecules";
+import { useContext } from "react";
+import { UsersContext } from "@/providers";
 
 export function BuddyList() {
-  const { data } = useSnapshotDocs<User>({
-    path: 'users'
-  });
+
+  const { users } = useContext(UsersContext)
 
   return (
     <Box sx={{
@@ -18,7 +16,7 @@ export function BuddyList() {
       mt: 2
     }}>
       {
-        data?.map(item => (
+        users?.map(item => (
           <BuddyCard key={item.id} user={item} />
         ))
       }

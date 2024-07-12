@@ -1,18 +1,36 @@
-import { Avatar, Box, Button, Card, Typography } from "@mui/material";
-import { green, grey, pink, yellow } from "@mui/material/colors";
-import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
+import { Avatar, Box, Button, Card, Rating, Typography } from "@mui/material";
+import { green, grey, pink, red, yellow } from "@mui/material/colors";
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
 import { User } from "@/types";
+import { getActiveUntil } from "@/helpers";
 
 type IProp = {
   user?: User;
   onClick?: () => void;
 }
 
+function getStatus(user?: User) {
+  if (!user) return;
+
+  const activeUntil = getActiveUntil(user.lastLogin);
+
+  if (user.incall) return 'incall';
+
+  if (activeUntil) return 'active';
+
+  return 'offline';
+}
+
 export function BuddyCard({ user, onClick }: IProp) {
 
-  const status = user?.incall ? yellow : green;
+  const statusColorMapper = {
+    'active': green,
+    'incall': yellow,
+    'offline': red,
+  };
+
+  const status = getStatus(user) as keyof typeof statusColorMapper;
 
   return (
     <Card
@@ -37,18 +55,18 @@ export function BuddyCard({ user, onClick }: IProp) {
           content: "''",
           width: 8,
           height: 8,
-          background: status[600],
+          background: statusColorMapper[status][600],
           display: 'block',
           position: 'relative',
           borderRadius: 100,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          border: `1px solid ${status[500]}`,
+          border: `1px solid ${statusColorMapper[status][500]}`,
           boxShadow: `0 2px 1px ${theme.palette.mode === "dark"
             ? "rgba(0, 0, 0, 0.5)"
             : "rgba(45, 45, 60, 0.2)"
-            }, inset 0 1.5px 1px ${status[400]}, inset 0 -2px 1px ${status[600]}`,
+            }, inset 0 1.5px 1px ${statusColorMapper[status][400]}, inset 0 -2px 1px ${statusColorMapper[status][600]}`,
         }
       })}>
       </Box>
@@ -76,18 +94,10 @@ export function BuddyCard({ user, onClick }: IProp) {
           <Face6RoundedIcon color='primary' />
           <span>{user?.name}</span>
         </Typography>
-        <Typography
-          color='black'
-          variant="body2"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: .1
-          }}
-        >
-          <StarOutlineRoundedIcon color='primary' />
-          <span>{user?.rank}</span>
-        </Typography>
+
+        <Rating sx={{
+          my: .5
+        }} name="Rating" value={user?.rank} readOnly />
 
         <Box sx={{
           display: 'flex',

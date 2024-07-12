@@ -1,14 +1,21 @@
+'use client'
 import { Avatar, Box, IconButton, Typography } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
 import { pink } from "@mui/material/colors";
+import { useContext } from "react";
+import { AuthenticationContext } from "@/providers";
+import { useRouter } from "next/navigation";
 
 export function ProfileHeader() {
+  const { user } = useContext(AuthenticationContext);
+  const { push } = useRouter();
   return (
     <Box sx={{
       position: 'relative',
       width: '100%'
     }}>
       <IconButton
+        onClick={() => push('/home')}
         sx={{
           position: 'absolute',
           top: '5%',
@@ -27,15 +34,14 @@ export function ProfileHeader() {
         pt: '5rem'
       }}>
         <Avatar
-          src="https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg"
-          alt='Remmy'
+          src={user?.avatarUrl}
+          alt={user?.name}
           sx={{
             width: 70,
             height: 70
           }}
         />
-        <Typography variant="subtitle1" fontWeight='bold'>Mark Smith</Typography>
-        <Typography variant="subtitle1">Expert</Typography>
+        <Typography variant="subtitle1" fontWeight='bold'>{user?.name}</Typography>
       </Box>
 
       <Box

@@ -8,3 +8,4 @@ export * from "./Logout";
 export * from "./TopUpTime";
 export * from "./PaymentOptions";
 export * from "./BuddyList";
+export * from "./ProfileHeader";
