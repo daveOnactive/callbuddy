@@ -4,10 +4,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from "@/app/firebase";
 import { User } from "@/types";
+import { useSnapshot } from "@/hooks";
 
 export const AuthenticationContext = createContext<Partial<{
   isCreatingUser: boolean;
-  fastLogin: () => Promise<void>
+  fastLogin: () => Promise<void>;
+  user: User;
+  logout: () => void
 }>>({});
 
 export function AuthenticationProvider({ children }: PropsWithChildren) {
@@ -16,25 +19,37 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
   const { push } = useRouter();
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
-
   function saveUserIdToStorage(id: string) {
     localStorage.setItem('user', id);
   }
 
   function retrieveUserIdFromStorage() {
+    if (typeof window === "undefined") {
+      return;
+    }
     return localStorage.getItem('user');
   }
 
+  function logout() {
+    localStorage.clear();
+    push('/');
+  }
+
+  const userId = retrieveUserIdFromStorage() as string;
+
+  const { data } = useSnapshot<User>({
+    path: 'users',
+    id: userId
+  });
+
   useEffect(() => {
-    const user = retrieveUserIdFromStorage();
-    if (!user && pathname !== '/') {
+    if (!userId && pathname !== '/') {
       push('/')
     }
   }, [push]);
 
   useEffect(() => {
-    const user = retrieveUserIdFromStorage();
-    if (user && pathname === '/') {
+    if (userId && pathname === '/') {
       push('/home')
     }
   }, []);
@@ -73,7 +88,9 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
     <AuthenticationContext.Provider
       value={{
         isCreatingUser,
-        fastLogin
+        fastLogin,
+        user: data,
+        logout
       }}
     >
       {children}
