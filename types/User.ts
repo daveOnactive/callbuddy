@@ -8,4 +8,5 @@ export type User = {
   rank: string;
   incall: boolean;
   gender: string;
+  lastLogin: string;
 };

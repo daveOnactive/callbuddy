@@ -1,17 +1,40 @@
 "use client";
 import { db } from "@/app/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  where,
+  query,
+  FieldPath,
+  WhereFilterOp,
+  orderBy,
+  OrderByDirection,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 type IProps = {
   path: string;
+  queryOpt?: {
+    fieldPath?: FieldPath | string;
+    opStr?: WhereFilterOp;
+    value?: any;
+    orderBy?: string;
+    order?: OrderByDirection;
+  };
 };
-export function useSnapshotDocs<T>({ path }: IProps) {
+export function useSnapshotDocs<T>({ path, queryOpt }: IProps) {
   const [data, setData] = useState<T[]>();
 
   useEffect(() => {
     const dataRef = collection(db, path);
-    onSnapshot(dataRef, async (snapshot) => {
+
+    const queryRef = queryOpt
+      ? query(dataRef, orderBy(queryOpt?.orderBy as string, queryOpt.order))
+      : undefined;
+
+    const ref = queryRef || dataRef;
+
+    onSnapshot(ref, async (snapshot) => {
       const assets: T[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -19,7 +42,7 @@ export function useSnapshotDocs<T>({ path }: IProps) {
       });
       setData(assets);
     });
-  }, [path]);
+  }, [queryOpt?.value]);
 
   return {
     data,
