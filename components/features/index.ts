@@ -7,3 +7,4 @@ export * from "./BuyTime";
 export * from "./Logout";
 export * from "./TopUpTime";
 export * from "./PaymentOptions";
+export * from "./BuddyList";

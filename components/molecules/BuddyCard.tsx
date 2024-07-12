@@ -1,13 +1,18 @@
-'use client'
 import { Avatar, Box, Button, Card, Typography } from "@mui/material";
-import { grey, pink, yellow } from "@mui/material/colors";
+import { green, grey, pink, yellow } from "@mui/material/colors";
 import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
-import { useRouter } from "next/navigation";
+import { User } from "@/types";
 
-export function BuddyCard() {
-  const { push } = useRouter();
+type IProp = {
+  user?: User;
+  onClick?: () => void;
+}
+
+export function BuddyCard({ user, onClick }: IProp) {
+
+  const status = user?.incall ? yellow : green;
 
   return (
     <Card
@@ -32,18 +37,18 @@ export function BuddyCard() {
           content: "''",
           width: 8,
           height: 8,
-          background: yellow[600],
+          background: status[600],
           display: 'block',
           position: 'relative',
           borderRadius: 100,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          border: `1px solid ${yellow[500]}`,
+          border: `1px solid ${status[500]}`,
           boxShadow: `0 2px 1px ${theme.palette.mode === "dark"
             ? "rgba(0, 0, 0, 0.5)"
             : "rgba(45, 45, 60, 0.2)"
-            }, inset 0 1.5px 1px ${yellow[400]}, inset 0 -2px 1px ${yellow[600]}`,
+            }, inset 0 1.5px 1px ${status[400]}, inset 0 -2px 1px ${status[600]}`,
         }
       })}>
       </Box>
@@ -56,7 +61,7 @@ export function BuddyCard() {
           justifyContent: 'center'
         }}
       >
-        <Avatar src="https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg" alt='Remmy' />
+        <Avatar src={user?.avatarUrl} alt={user?.name} />
       </Box>
       <Box p={1}>
         <Typography
@@ -69,7 +74,7 @@ export function BuddyCard() {
           }}
         >
           <Face6RoundedIcon color='primary' />
-          <span>Smith Mark</span>
+          <span>{user?.name}</span>
         </Typography>
         <Typography
           color='black'
@@ -81,7 +86,7 @@ export function BuddyCard() {
           }}
         >
           <StarOutlineRoundedIcon color='primary' />
-          <span>Master</span>
+          <span>{user?.rank}</span>
         </Typography>
 
         <Box sx={{
@@ -93,9 +98,7 @@ export function BuddyCard() {
           <Button
             size='small'
             variant="contained"
-            onClick={() => {
-              push('incall?joinCallId=kfnrnginrignring');
-            }}
+            onClick={onClick}
           >
             <AddIcCallRoundedIcon fontSize="small" />
           </Button>

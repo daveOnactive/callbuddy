@@ -1,7 +1,23 @@
-import { AppBar, BuddyCard, StartCall, Tabs } from "@/components";
+import { AppBar, BuddyList, StartCall, Tabs } from "@/components";
 import { Box } from "@mui/material";
 
 export default function Home() {
+
+  const tabsContent = [
+    {
+      title: 'Buddies',
+      content: <BuddyList />
+    },
+    {
+      title: 'Rooms',
+      content: <></>
+    },
+    {
+      title: 'AI Buddy',
+      content: <></>
+    }
+  ];
+
   return (
     <Box
       component='main'
@@ -13,19 +29,7 @@ export default function Home() {
       }}
     >
       <AppBar />
-      <Tabs />
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 2,
-        mt: 2
-      }}>
-        {
-          [1, 2, 3, 4, 5, 6, 7].map(item => (
-            <BuddyCard key={item} />
-          ))
-        }
-      </Box>
+      <Tabs tabs={tabsContent} />
       <StartCall />
     </Box>
   )
