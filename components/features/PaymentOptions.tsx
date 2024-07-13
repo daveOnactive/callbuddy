@@ -1,9 +1,31 @@
-import { Typography, Box, Button, IconButton, Paper } from "@mui/material";
+import { Typography, Box, IconButton, Paper } from "@mui/material";
 import { grey } from "@mui/material/colors";
-import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
+import TagRoundedIcon from '@mui/icons-material/TagRounded';
+import React from "react";
 
-function Option() {
+const options = [
+  {
+    name: 'Bank Transfer',
+    icon: <AccountBalanceRoundedIcon color='primary' />
+  },
+  {
+    name: 'USSD',
+    icon: <TagRoundedIcon color='primary' />
+  },
+  {
+    name: 'Card Payment',
+    icon: <CreditCardRoundedIcon color='primary' />
+  }
+]
+
+type IOption = {
+  icon: React.ReactNode;
+  name: string;
+}
+function Option({ icon, name }: IOption) {
   return (
     <Box
       sx={{
@@ -18,19 +40,25 @@ function Option() {
       <Paper variant="outlined" sx={{
         width: 50,
         height: 50,
-        backgroundColor: 'white !important'
+        backgroundColor: 'white !important',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
       }}>
-
+        {icon}
       </Paper>
 
       <Typography variant="body2">
-        Transfer
+        {name}
       </Typography>
     </Box>
   )
 }
 
-export function PaymentOptions() {
+type IPaymentOptions = {
+  onClose?: () => void;
+}
+export function PaymentOptions({ onClose }: IPaymentOptions) {
 
   return (
     <Box>
@@ -39,6 +67,7 @@ export function PaymentOptions() {
           mt: 1.5,
           ml: 1.5
         }}
+        onClick={onClose}
       >
         <ArrowBackIosNewRoundedIcon sx={{ color: grey[900] }} />
       </IconButton>
@@ -56,10 +85,15 @@ export function PaymentOptions() {
         Easy Payment
       </Typography>
 
-      <Option />
-      <Option />
-      <Option />
-      <Option />
+      {
+        options.map((option) => (
+          <Option
+            key={option.name}
+            name={option.name}
+            icon={option.icon}
+          />
+        ))
+      }
     </Box>
   )
 }
