@@ -5,8 +5,17 @@ import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
 import { useModal } from "@/hooks";
 import { PaymentOptions } from "./PaymentOptions";
+import { useQuery } from "@tanstack/react-query";
+import { Api } from "@/services";
+import { Currency, TopUp } from "@/types";
+import { numberFormat } from "@/helpers";
 
-function TopUpItem({ onClick }: any) {
+type ITopUpItem = {
+  onClick: () => void;
+  data: TopUp;
+}
+
+function TopUpItem({ onClick, data }: ITopUpItem) {
   return (
     <Box
       sx={{
@@ -18,17 +27,17 @@ function TopUpItem({ onClick }: any) {
       }}
     >
       <Typography variant="body2">
-        5 mins
+        {data.mins} mins
       </Typography>
 
       <Box>
         <Typography variant="subtitle2">
-          500
+          {numberFormat(Number(data.price), Currency.NGN)}
         </Typography>
         <Typography sx={{
           textDecoration: 'line-through'
         }} variant="subtitle2" fontWeight={100}>
-          500
+          {numberFormat(Number(data.discount), Currency.NGN)}
         </Typography>
       </Box>
 
@@ -46,12 +55,20 @@ function TopUpItem({ onClick }: any) {
 export function TopUpTime() {
   const { showModal } = useModal();
 
+  const { data, isLoading } = useQuery<TopUp[]>({
+    queryKey: ['top-up'],
+    queryFn: async () => (await Api.get('/top-up')).data
+  });
+
   function handleOpen() {
     showModal(<PaymentOptions />, {
       isFullScreen: true,
       bgColor: pink[200]
     })
   }
+
+  if (isLoading) return <>loading...</>
+
   return (
     <Box>
       <Typography
@@ -68,11 +85,15 @@ export function TopUpTime() {
         <LocalMallRoundedIcon /><span>Top up Mins</span>
       </Typography>
 
-      <TopUpItem onClick={handleOpen} />
-      <TopUpItem />
-      <TopUpItem />
-      <TopUpItem />
-      <TopUpItem />
+      {
+        data?.map(item => (
+          <TopUpItem
+            onClick={handleOpen}
+            data={item}
+            key={item.id}
+          />
+        ))
+      }
     </Box>
   )
 }

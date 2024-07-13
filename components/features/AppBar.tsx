@@ -6,8 +6,13 @@ import { useModal } from "@/hooks";
 import { SelectGender } from ".";
 import { AuthenticationContext } from "@/providers";
 import { useRouter } from "next/navigation";
+import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
 
-export function AppBar() {
+type IProps = {
+  hasBackButton?: boolean;
+}
+
+export function AppBar({ hasBackButton }: IProps) {
 
   const { showModal, handleModalClose } = useModal();
 
@@ -29,9 +34,23 @@ export function AppBar() {
       alignItems: 'center',
       width: '100%'
     }}>
-      <Button variant="contained" startIcon={<MoreTimeRoundedIcon />}>
-        {user?.minutesLeft || 0} mins remaining
-      </Button>
+
+      {
+        hasBackButton ? (
+          <IconButton
+            onClick={() => push('/home')}
+          >
+            <ArrowBackIosNewRoundedIcon sx={{ color: '#111' }} />
+          </IconButton>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={() => push('/top-up')}
+            startIcon={<MoreTimeRoundedIcon />}>
+            {user?.minutesLeft || 0} mins remaining
+          </Button>
+        )
+      }
 
 
       <Box
