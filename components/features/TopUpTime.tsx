@@ -53,7 +53,7 @@ function TopUpItem({ onClick, data }: ITopUpItem) {
 }
 
 export function TopUpTime() {
-  const { showModal } = useModal();
+  const { showModal, handleModalClose } = useModal();
 
   const { data, isLoading } = useQuery<TopUp[]>({
     queryKey: ['top-up'],
@@ -61,7 +61,7 @@ export function TopUpTime() {
   });
 
   function handleOpen() {
-    showModal(<PaymentOptions />, {
+    showModal(<PaymentOptions onClose={handleModalClose} />, {
       isFullScreen: true,
       bgColor: pink[200]
     })
