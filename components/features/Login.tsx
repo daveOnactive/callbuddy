@@ -36,7 +36,7 @@ export function Login() {
           objectFit: 'contain'
         }}
       >
-        <source src="https://el.phncdn.com/pics/gifs/026/643/752/26643752a.mp4" type="video/mp4" />
+        <source src="" type="video/mp4" />
       </Box>
       <Box
         sx={{

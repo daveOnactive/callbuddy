@@ -38,26 +38,7 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
   }
 
   const { mutate } = useMutation({
-    mutationFn: async (data: Partial<User>) => await Api.post('/user', data),
-    onSettled: () => {
-      setIsCreatingUser(false);
-    },
-    onSuccess: (res) => {
-      saveUserIdToStorage(res.data);
-
-      showNotification({
-        message: 'Swift login',
-        type: 'success'
-      })
-
-      push('/home');
-    },
-    onError: (err) => {
-      showNotification({
-        message: err.message,
-        type: 'error'
-      });
-    }
+    mutationFn: async (data: Partial<User>) => await Api.post('/user', data)
   })
 
   const { showNotification } = useAlert();
@@ -109,7 +90,20 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
 
     setIsCreatingUser(true);
 
-    mutate(userData)
+    mutate(userData, {
+      onSuccess: (res) => {
+        saveUserIdToStorage(res.data);
+        setIsCreatingUser(false);
+        push('/home');
+      },
+      onError: (err) => {
+        setIsCreatingUser(false);
+        showNotification({
+          message: err.message,
+          type: 'error'
+        });
+      }
+    })
   }
 
 

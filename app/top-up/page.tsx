@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 export default function TopUp() {
   return (
     <Box>
-      <AppBar />
+      <AppBar hasBackButton />
       <TopUpTime />
     </Box>
   )
