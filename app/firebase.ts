@@ -6,12 +6,12 @@ import { initializeFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyACSXUaXBBpHSuYTsqBLPVJyjUAExyux7E",
-  authDomain: "callbuddy-1deba.firebaseapp.com",
-  projectId: "callbuddy-1deba",
-  storageBucket: "callbuddy-1deba.appspot.com",
-  messagingSenderId: "1053208019643",
-  appId: "1:1053208019643:web:141941074f2581730c9f9e",
+  apiKey: "AIzaSyAJe3AxhaFM4689QhX1BIH-gkaeau6AUTw",
+  authDomain: "callbuddy-b2624.firebaseapp.com",
+  projectId: "callbuddy-b2624",
+  storageBucket: "callbuddy-b2624.appspot.com",
+  messagingSenderId: "219560982387",
+  appId: "1:219560982387:web:4d1866f13821ef7c34b706",
 };
 
 // Initialize Firebase

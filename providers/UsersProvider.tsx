@@ -30,12 +30,20 @@ export function UsersProvider({ children }: PropsWithChildren) {
       const ref = query(dataRef, orderBy('lastLogin', 'asc'))
 
       onSnapshot(ref, async (snapshot) => {
-        const assets: User[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          assets.push({ ...data, id: doc.id } as User);
-        });
-        setData(assets);
+        try {
+          const assets: User[] = [];
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            assets.push({ ...data, id: doc.id } as User);
+          });
+          setData(assets);
+        } catch (err: any) {
+          showNotification({
+            message: err.message,
+            type: "error",
+          });
+        }
+
       });
     } catch (err: any) {
       showNotification({
@@ -46,7 +54,7 @@ export function UsersProvider({ children }: PropsWithChildren) {
   }
 
   useEffect(() => {
-    getData()
+    getData();
   }, [])
 
   return (

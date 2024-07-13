@@ -1,17 +1,17 @@
 'use client'
 import { createContext, PropsWithChildren, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from 'next/navigation';
-import { addDoc, collection } from 'firebase/firestore';
-import { db } from "@/app/firebase";
 import { User } from "@/types";
-import { useSnapshot, useUpdateDoc } from "@/hooks";
+import { useAlert, useSnapshot } from "@/hooks";
 import { getActiveUntil } from "@/helpers";
+import { useMutation } from "@tanstack/react-query";
+import { Api } from "@/services";
 
 export const AuthenticationContext = createContext<Partial<{
   isCreatingUser: boolean;
-  fastLogin: () => Promise<void>;
+  fastLogin: () => void;
   user: User;
-  logout: () => void
+  logout: () => void;
 }>>({});
 
 export function AuthenticationProvider({ children }: PropsWithChildren) {
@@ -37,6 +37,31 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
     push('/');
   }
 
+  const { mutate } = useMutation({
+    mutationFn: async (data: Partial<User>) => await Api.post('/user', data),
+    onSettled: () => {
+      setIsCreatingUser(false);
+    },
+    onSuccess: (res) => {
+      saveUserIdToStorage(res.data);
+
+      showNotification({
+        message: 'Swift login',
+        type: 'success'
+      })
+
+      push('/home');
+    },
+    onError: (err) => {
+      showNotification({
+        message: err.message,
+        type: 'error'
+      });
+    }
+  })
+
+  const { showNotification } = useAlert();
+
   const userId = retrieveUserIdFromStorage() as string;
 
   const { data } = useSnapshot<User>({
@@ -44,7 +69,7 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
     id: userId
   });
 
-  const { mutate } = useUpdateDoc('users')
+  // const { mutate } = useUpdateDoc('users')
 
   useEffect(() => {
     if (!userId && pathname !== '/') {
@@ -71,7 +96,7 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
   //   }
   // }, [data]);
 
-  async function fastLogin() {
+  function fastLogin() {
 
     const userData: Partial<User> = {
       name: 'Fire Fox',
@@ -82,24 +107,9 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
       lastLogin: new Date().toISOString(),
     }
 
-    try {
-      setIsCreatingUser(true);
-      const userRef = collection(db, 'users');
+    setIsCreatingUser(true);
 
-      const user = await addDoc(userRef, {
-        ...userData
-      });
-
-      saveUserIdToStorage(user.id);
-
-      push('/home');
-
-    } catch (err: any) {
-      setIsCreatingUser(false);
-      throw new Error(err.message)
-    } finally {
-      setIsCreatingUser(false);
-    }
+    mutate(userData)
   }
 
 
