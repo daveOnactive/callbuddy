@@ -1,3 +1,9 @@
+export enum UserCallStatus {
+  CREATE_CALL = "CREATE_CALL",
+  IN_CALL = "IN_CALL",
+  NOT_IN_CALL = "NOT_IN_CALL",
+}
+
 export type User = {
   phoneNumber: string;
   id: string;
@@ -9,4 +15,5 @@ export type User = {
   incall: boolean;
   gender: string;
   lastLogin: string;
+  call: UserCallStatus;
 };

@@ -3,10 +3,17 @@ import { Box } from "@mui/material";
 import { BuddyCard } from "../molecules";
 import { useContext } from "react";
 import { UsersContext } from "@/providers";
+import { useRouter } from "next/navigation";
 
 export function BuddyList() {
 
-  const { users } = useContext(UsersContext)
+  const { users } = useContext(UsersContext);
+
+  const { push } = useRouter();
+
+  function handleJoinCall(userId: string) {
+    push(`/incall?joinCallId=${userId}`);
+  }
 
   return (
     <Box sx={{
@@ -17,7 +24,7 @@ export function BuddyList() {
     }}>
       {
         users?.map(item => (
-          <BuddyCard key={item.id} user={item} />
+          <BuddyCard key={item.id} user={item} onClick={() => handleJoinCall(item.id)} />
         ))
       }
     </Box>

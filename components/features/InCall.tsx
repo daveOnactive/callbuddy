@@ -4,7 +4,7 @@ import { CallActions } from "../molecules";
 import { pink } from "@mui/material/colors";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
-import { WebRTCContext } from "@/providers";
+import { CallContext } from "@/providers";
 
 export function InCall() {
   const {
@@ -19,7 +19,7 @@ export function InCall() {
     switchCamera,
     endCall,
     localStreamRef
-  } = useContext(WebRTCContext);
+  } = useContext(CallContext);
 
   const [windowHeight, setWindowHeight] = useState(0);
 
@@ -29,7 +29,8 @@ export function InCall() {
 
   const remoteStreamRef = useRef<HTMLVideoElement>();
 
-  const joinCallId = params.get('joinCallId') as string
+  const joinCallId = params.get('joinCallId') as string;
+  const callId = params.get('callId') as string;
 
   const isJoinCall = !!joinCallId;
 
@@ -138,7 +139,7 @@ export function InCall() {
         toggleMic={callAudio}
         toggleCamera={toggleCamera}
         switchCamera={switchCamera}
-        endCall={endCall}
+        endCall={() => endCall?.(callId || joinCallId)}
       />
     </Box>
   )

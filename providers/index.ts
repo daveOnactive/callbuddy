@@ -1,5 +1,5 @@
 export * from "./ModalProvider";
-export * from "./WebRTCProvider";
+export * from "./CallProvider";
 export * from "./AuthenticationProvider";
 export * from "./UsersProvider";
 export * from "./SnackbarProvider";
