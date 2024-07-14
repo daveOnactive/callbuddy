@@ -1,10 +1,10 @@
 import { InCall } from "@/components";
-import { WebRTCProvider } from "@/providers";
+import { CallProvider } from "@/providers";
 
 export default function Page() {
   return (
-    <WebRTCProvider>
+    <CallProvider>
       <InCall />
-    </WebRTCProvider>
+    </CallProvider>
   )
 }

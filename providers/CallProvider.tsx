@@ -1,20 +1,25 @@
 'use client'
-import { createContext, PropsWithChildren, useEffect, useRef, useState } from "react";
-import { collection, addDoc, doc, setDoc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
+import { collection, addDoc, doc, setDoc, getDoc, updateDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { db } from "@/app/firebase";
 import { useRouter } from "next/navigation";
+import { AuthenticationContext } from "./AuthenticationProvider";
+import { useMutation } from "@tanstack/react-query";
+import { Api } from "@/services";
+import { User, UserCallStatus } from "@/types";
+import { useUpdateDoc } from "@/hooks";
 
-export const WebRTCContext = createContext<Partial<{
+export const CallContext = createContext<Partial<{
   remoteStream: MediaStream;
   localStream: MediaStream;
   createCall: () => void;
   joinCall: (id: string) => void;
-  callAudio: () => void;
+  callAudio: (id?: string) => void;
   toggleCamera: () => void;
   isMuted: boolean;
   isOffCam: boolean;
   switchCamera: () => void;
-  endCall: () => void;
+  endCall: (id: string) => void;
   localStreamRef: any;
   remoteStreamRef: any;
 }>>({});
@@ -31,8 +36,7 @@ const configuration = {
   iceCandidatePoolSize: 100,
 };
 
-export function WebRTCProvider({ children }: PropsWithChildren) {
-  const [callId, setCallId] = useState('idjfhrryiw5wf');
+export function CallProvider({ children }: PropsWithChildren) {
   const [localStream, setLocalStream] = useState<MediaStream>();
   const [remoteStream, setRemoteStream] = useState<MediaStream>();
   const [isMuted, setIsMuted] = useState(false);
@@ -41,6 +45,10 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>();
 
   const localStreamRef = useRef<HTMLVideoElement>();
+
+  const { user } = useContext(AuthenticationContext);
+
+  const { mutate } = useUpdateDoc('users');
 
   const { push } = useRouter();
 
@@ -92,9 +100,9 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  async function createCall() {
+  async function createCall(id?: string) {
 
-    if (!peerConnection) {
+    if (!peerConnection || !user) {
       return;
     }
 
@@ -104,7 +112,11 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
       peerConnection?.addTrack(track, localStream);
     });
 
-    const callRef = doc(db, 'calls', callId);
+    const callRef = doc(db, 'calls', id || user.id);
+
+    mutate(user.id, {
+      call: UserCallStatus.CREATE_CALL
+    })
 
     const callerCandidatesCollection = collection(callRef, 'callerCandidates');
     const calleeCandidatesCollection = collection(callRef, 'calleeCandidates');
@@ -144,6 +156,10 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
         console.log('Got remote description: ', data.answer);
         const rtcSessionDescription = new RTCSessionDescription(data.answer);
         await peerConnection.setRemoteDescription(rtcSessionDescription);
+
+        mutate(user.id, {
+          call: UserCallStatus.IN_CALL
+        })
       }
     });
 
@@ -159,12 +175,12 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
   };
 
-  async function joinCall(_id: string) {
-    if (!peerConnection) {
+  async function joinCall(id: string) {
+    if (!peerConnection || !user) {
       return;
     }
 
-    const callRef = doc(db, 'calls', callId);
+    const callRef = doc(db, 'calls', id);
 
     const callSnapshot = await getDoc(callRef);
 
@@ -212,6 +228,10 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
       await updateDoc(callRef, callWithAnswer);
 
+      mutate(user.id, {
+        call: UserCallStatus.IN_CALL
+      })
+
       onSnapshot(callerCandidatesCollection, (snapshot) => {
         snapshot.docChanges().forEach(async change => {
           if (change.type === 'added') {
@@ -225,7 +245,20 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
     }
   };
 
-  async function endCall() {
+  async function endCall(id: string) {
+
+    const callRef = doc(db, 'calls', id)
+
+    mutate(user?.id as string, {
+      call: UserCallStatus.NOT_IN_CALL
+    });
+
+    if (id !== user?.id) {
+      await updateDoc(callRef, {});
+    } else {
+      await deleteDoc(callRef);
+    }
+
     localStream?.getTracks().forEach(track => track.stop());
     setLocalStream(undefined);
     setRemoteStream(undefined);
@@ -236,9 +269,6 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
   };
 
   function callAudio() {
-    // if (!remoteStream) {
-    //   return;
-    // }
     localStream?.getAudioTracks().forEach((track) => {
       track.enabled = !track.enabled;
       setIsMuted(!track.enabled);
@@ -286,7 +316,7 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
 
 
   return (
-    <WebRTCContext.Provider
+    <CallContext.Provider
       value={{
         localStream,
         remoteStream,
@@ -302,6 +332,6 @@ export function WebRTCProvider({ children }: PropsWithChildren) {
       }}
     >
       {children}
-    </WebRTCContext.Provider>
+    </CallContext.Provider>
   )
 }

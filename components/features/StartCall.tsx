@@ -1,11 +1,15 @@
 'use client'
+import { AuthenticationContext } from '@/providers';
 import VideoCallRoundedIcon from '@mui/icons-material/VideoCallRounded';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
 
 export function StartCall() {
 
   const { push } = useRouter();
+
+  const { user } = useContext(AuthenticationContext);
 
   return (
     <Button
@@ -19,7 +23,7 @@ export function StartCall() {
         zIndex: 3
       }}
       onClick={() => {
-        push('/incall');
+        push(`/incall?callId=${user?.id}`);
       }}
     >
       Start Call

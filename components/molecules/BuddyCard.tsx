@@ -2,7 +2,7 @@ import { Avatar, Box, Button, Card, Rating, Typography } from "@mui/material";
 import { green, grey, pink, red, yellow } from "@mui/material/colors";
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
-import { User } from "@/types";
+import { User, UserCallStatus } from "@/types";
 import { getActiveUntil } from "@/helpers";
 
 type IProp = {
@@ -29,6 +29,12 @@ export function BuddyCard({ user, onClick }: IProp) {
     'incall': yellow,
     'offline': red,
   };
+
+  const callStatusText = {
+    [UserCallStatus.IN_CALL]: 'In a call',
+    [UserCallStatus.CREATE_CALL]: 'Join call',
+    [UserCallStatus.NOT_IN_CALL]: 'Call'
+  }
 
   const status = getStatus(user) as keyof typeof statusColorMapper;
 
@@ -109,8 +115,11 @@ export function BuddyCard({ user, onClick }: IProp) {
             size='small'
             variant="contained"
             onClick={onClick}
+            endIcon={<AddIcCallRoundedIcon fontSize="small" />}
+            disabled={user?.call === UserCallStatus.IN_CALL}
           >
-            <AddIcCallRoundedIcon fontSize="small" />
+
+            {callStatusText[user?.call as keyof typeof callStatusText] || 'Call'}
           </Button>
         </Box>
       </Box>
