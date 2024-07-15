@@ -82,7 +82,6 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
     const userData: Partial<User> = {
       name: 'Fire Fox',
       rank: 3,
-      incall: false,
       avatarUrl: 'https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg',
       minutesLeft: '2',
       lastLogin: new Date().toISOString(),
