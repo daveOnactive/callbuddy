@@ -18,7 +18,8 @@ export function InCall() {
     toggleCamera,
     switchCamera,
     endCall,
-    localStreamRef
+    localStreamRef,
+    disconnectStream
   } = useContext(CallContext);
 
   const [windowHeight, setWindowHeight] = useState(0);
@@ -45,6 +46,10 @@ export function InCall() {
       createCall?.();
       isMounted.current = true;
     }
+
+    return () => {
+      disconnectStream?.();
+    }
   }, [localStream])
 
   useEffect(() => {
@@ -53,6 +58,9 @@ export function InCall() {
       isMounted.current = true;
     }
 
+    return () => {
+      disconnectStream?.();
+    }
   }, [localStream]);
 
   useEffect(() => {

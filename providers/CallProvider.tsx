@@ -22,6 +22,7 @@ export const CallContext = createContext<Partial<{
   endCall: (id: string) => void;
   localStreamRef: any;
   remoteStreamRef: any;
+  disconnectStream: () => void;
 }>>({});
 
 const configuration = {
@@ -245,17 +246,21 @@ export function CallProvider({ children }: PropsWithChildren) {
     }
   };
 
+  function disconnectStream() {
+    localStream?.getTracks().forEach(track => track.stop());
+  };
+
   async function endCall(id: string) {
 
-    const callRef = doc(db, 'calls', id)
+    // peerConnection?.close();
+
+    const callRef = doc(db, 'calls', id);
 
     mutate(user?.id as string, {
       call: UserCallStatus.NOT_IN_CALL
     });
 
-    if (id !== user?.id) {
-      await updateDoc(callRef, {});
-    } else {
+    if (id === user?.id) {
       await deleteDoc(callRef);
     }
 
@@ -328,7 +333,8 @@ export function CallProvider({ children }: PropsWithChildren) {
         isMuted,
         isOffCam,
         endCall,
-        localStreamRef
+        localStreamRef,
+        disconnectStream
       }}
     >
       {children}
