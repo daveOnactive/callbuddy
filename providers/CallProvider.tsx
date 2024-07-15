@@ -1,12 +1,10 @@
 'use client'
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
-import { collection, addDoc, doc, setDoc, getDoc, updateDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from "@/app/firebase";
 import { useRouter } from "next/navigation";
 import { AuthenticationContext } from "./AuthenticationProvider";
-import { useMutation } from "@tanstack/react-query";
-import { Api } from "@/services";
-import { User, UserCallStatus } from "@/types";
+import { UserCallStatus } from "@/types";
 import { useUpdateDoc } from "@/hooks";
 
 export const CallContext = createContext<Partial<{
@@ -34,7 +32,7 @@ const configuration = {
       ],
     },
   ],
-  iceCandidatePoolSize: 100,
+  iceCandidatePoolSize: 10,
 };
 
 export function CallProvider({ children }: PropsWithChildren) {
@@ -113,23 +111,11 @@ export function CallProvider({ children }: PropsWithChildren) {
       peerConnection?.addTrack(track, localStream);
     });
 
-    const callRef = doc(db, 'calls', id || user.id);
+    const userRef = doc(db, 'users', user.id);
 
-    mutate(user.id, {
-      call: UserCallStatus.CREATE_CALL
-    })
+    const userDoc = (await getDoc(userRef)).data();
 
-    const callerCandidatesCollection = collection(callRef, 'callerCandidates');
-    const calleeCandidatesCollection = collection(callRef, 'calleeCandidates');
-
-    peerConnection.addEventListener('icecandidate', event => {
-      if (!event.candidate) {
-        console.log('Got final candidate!');
-        return;
-      }
-      console.log('Got candidate: ', event.candidate);
-      addDoc(callerCandidatesCollection, event.candidate.toJSON());
-    });
+    const callerCandidates: any[] = [];
 
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
@@ -142,7 +128,25 @@ export function CallProvider({ children }: PropsWithChildren) {
       },
     };
 
-    await setDoc(callRef, callWithOffer);
+    peerConnection.addEventListener('icecandidate', event => {
+      if (!event.candidate) {
+        console.log('Got final candidate!');
+
+        mutate(user.id, {
+          call: {
+            ...userDoc?.call,
+            ...callWithOffer,
+            status: UserCallStatus.CREATE_CALL,
+            candidatesCollection: {
+              caller: callerCandidates,
+            }
+          }
+        });
+        return;
+      }
+      console.log('Got candidate: ', event.candidate);
+      callerCandidates.push(event.candidate.toJSON());
+    });
 
     peerConnection.addEventListener('track', event => {
       console.log('Got remote track:', event.streams[0]);
@@ -151,28 +155,33 @@ export function CallProvider({ children }: PropsWithChildren) {
       setRemoteStream(remoteStream);
     });
 
-    onSnapshot(callRef, async snapshot => {
+    let iceCandidatesReceived = false;
+
+    onSnapshot(userRef, async snapshot => {
       const data = snapshot.data();
-      if (!peerConnection.currentRemoteDescription && data && data.answer) {
-        console.log('Got remote description: ', data.answer);
-        const rtcSessionDescription = new RTCSessionDescription(data.answer);
+
+      if (!iceCandidatesReceived && data?.call?.candidatesCollection?.callee) {
+        data?.call?.candidatesCollection?.callee.forEach((data: any) => {
+          console.log(`Got new remote ICE candidate: ${JSON.stringify(data)}`);
+          peerConnection.addIceCandidate(new RTCIceCandidate(data));
+        });
+        iceCandidatesReceived = true;
+      }
+
+      if (!peerConnection.currentRemoteDescription && data && data?.call?.answer) {
+        console.log('Got remote description: ', data?.call?.answer);
+        const rtcSessionDescription = new RTCSessionDescription(data?.call?.answer);
         await peerConnection.setRemoteDescription(rtcSessionDescription);
 
         mutate(user.id, {
-          call: UserCallStatus.IN_CALL
-        })
-      }
-    });
+          call: {
+            ...userDoc?.call,
+            status: UserCallStatus.IN_CALL,
+          }
+        });
 
-    onSnapshot(calleeCandidatesCollection, snapshot => {
-      snapshot.docChanges().forEach(async change => {
-        if (change.type === 'added') {
-          let data = change.doc.data();
-          console.log(`Got new remote ICE candidate: ${JSON.stringify(data)}`);
-          await peerConnection.addIceCandidate(new RTCIceCandidate(data));
-        }
-      });
-    });
+      }
+    })
 
   };
 
@@ -181,11 +190,13 @@ export function CallProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    const callRef = doc(db, 'calls', id);
+    const userRef = doc(db, 'users', id);
 
-    const callSnapshot = await getDoc(callRef);
+    const userDocument = await getDoc(userRef);
 
-    if (callSnapshot.exists()) {
+    const userDoc = userDocument.data();
+
+    if (userDocument.exists()) {
 
       registerPeerConnectionListeners();
 
@@ -200,19 +211,9 @@ export function CallProvider({ children }: PropsWithChildren) {
         setRemoteStream(remoteStream);
       });
 
-      const calleeCandidatesCollection = collection(callRef, 'calleeCandidates');
-      const callerCandidatesCollection = collection(callRef, 'callerCandidates');
+      const calleeCandidates: any[] = [];
 
-      peerConnection?.addEventListener('icecandidate', event => {
-        if (!event.candidate) {
-          console.log('Got final candidate!');
-          return;
-        }
-        console.log('Got candidate: ', event.candidate);
-        addDoc(calleeCandidatesCollection, event.candidate.toJSON());
-      });
-
-      const offer = callSnapshot.data().offer;
+      const offer = userDoc?.call.offer;
 
       console.log('Got offer:', offer);
       await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -227,20 +228,46 @@ export function CallProvider({ children }: PropsWithChildren) {
         },
       };
 
-      await updateDoc(callRef, callWithAnswer);
+      peerConnection?.addEventListener('icecandidate', event => {
+        if (!event.candidate) {
+          console.log('Got final candidate!');
+
+          mutate(id, {
+            call: {
+              ...userDoc?.call,
+              ...callWithAnswer,
+              status: UserCallStatus.IN_CALL,
+              candidatesCollection: {
+                ...userDoc?.call?.candidatesCollection,
+                callee: calleeCandidates,
+              }
+            }
+          });
+          return;
+        }
+        console.log('Got candidate: ', event.candidate);
+        calleeCandidates.push(event.candidate.toJSON());
+      });
 
       mutate(user.id, {
-        call: UserCallStatus.IN_CALL
-      })
+        call: {
+          status: UserCallStatus.IN_CALL
+        }
+      });
 
-      onSnapshot(callerCandidatesCollection, (snapshot) => {
-        snapshot.docChanges().forEach(async change => {
-          if (change.type === 'added') {
-            let data = change.doc.data();
+      let iceCandidatesReceived = false;
+
+      onSnapshot(userRef, async snapshot => {
+        const data = snapshot.data();
+
+        if (!iceCandidatesReceived && data?.call?.candidatesCollection?.caller) {
+          data?.call?.candidatesCollection?.caller.forEach((data: any) => {
             console.log(`Got new remote ICE candidate: ${JSON.stringify(data)}`);
             peerConnection.addIceCandidate(new RTCIceCandidate(data));
-          }
-        });
+          });
+
+          iceCandidatesReceived = true;
+        }
       })
 
     }
@@ -252,16 +279,34 @@ export function CallProvider({ children }: PropsWithChildren) {
 
   async function endCall(id: string) {
 
-    // peerConnection?.close();
+    const userRef = doc(db, 'users', id);
 
-    const callRef = doc(db, 'calls', id);
-
-    mutate(user?.id as string, {
-      call: UserCallStatus.NOT_IN_CALL
-    });
+    const userDoc = (await getDoc(userRef)).data();
 
     if (id === user?.id) {
-      await deleteDoc(callRef);
+      mutate(id as string, {
+        call: {
+          status: UserCallStatus.NOT_IN_CALL
+        }
+      });
+    } else {
+      mutate(id, {
+        call: {
+          ...userDoc?.call,
+          status: UserCallStatus.CREATE_CALL,
+          answer: '',
+          candidatesCollection: {
+            ...userDoc?.call?.candidatesCollection,
+            callee: [],
+          }
+        }
+      });
+
+      mutate(user?.id as string, {
+        call: {
+          status: UserCallStatus.NOT_IN_CALL
+        }
+      });
     }
 
     localStream?.getTracks().forEach(track => track.stop());

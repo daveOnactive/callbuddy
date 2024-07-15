@@ -15,5 +15,7 @@ export type User = {
   incall: boolean;
   gender: string;
   lastLogin: string;
-  call: UserCallStatus;
+  call: {
+    status: UserCallStatus;
+  };
 };
