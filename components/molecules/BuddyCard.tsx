@@ -115,10 +115,10 @@ export function BuddyCard({ user, onClick }: IProp) {
             variant="contained"
             onClick={onClick}
             endIcon={<AddIcCallRoundedIcon fontSize="small" />}
-            disabled={user?.call?.status === UserCallStatus.IN_CALL}
+            disabled={user?.call === UserCallStatus.IN_CALL}
           >
 
-            {callStatusText[user?.call?.status as keyof typeof callStatusText] || 'Call'}
+            {callStatusText[user?.call as keyof typeof callStatusText] || 'Call'}
           </Button>
         </Box>
       </Box>
