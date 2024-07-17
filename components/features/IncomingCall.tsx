@@ -1,9 +1,41 @@
-import { Avatar, AvatarGroup, Box, Button, Typography } from "@mui/material";
+'use client'
+import { Avatar, Box, Button, Typography } from "@mui/material";
 import PhoneCallbackRoundedIcon from '@mui/icons-material/PhoneCallbackRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
+import { useUpdateDoc } from "@/hooks";
+import { useRouter } from "next/navigation";
+import { User, UserCallStatus } from "@/types";
 
-export function IncomingCall() {
+type IProps = {
+  user: User;
+  closeModal?: () => void;
+}
+export function IncomingCall({ user, closeModal }: IProps) {
+  const { mutate } = useUpdateDoc('users');
+
+  const { push } = useRouter();
+
+  function cancelCall() {
+    closeModal?.()
+    mutate(user?.id as string, {
+      incomingCall: {
+        status: UserCallStatus.NOT_IN_CALL
+      }
+    });
+  }
+
+  function acceptCall() {
+    closeModal?.()
+    mutate(user?.id as string, {
+      incomingCall: {
+        status: UserCallStatus.IN_CALL
+      }
+    })
+
+    push(`/incall?joinCallId=${user?.incomingCall?.callId}`);
+  }
+
   return (
     <Box sx={{
       display: 'flex',
@@ -13,27 +45,19 @@ export function IncomingCall() {
       alignItems: 'center',
       height: '100%'
     }}>
-      <AvatarGroup max={2}>
-        <Avatar
-          alt="Remy Sharp"
-          src="https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg"
-          sx={{ width: 56, height: 56 }}
-        />
-        <Avatar
-          alt="Travis Howard"
-          src="https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg"
-          sx={{ width: 56, height: 56 }}
-        />
-      </AvatarGroup>
-
-      <Typography color='primary' variant="h6" sx={{
+      <Avatar
+        alt="Travis Howard"
+        src={user?.incomingCall?.callerAvatarUrl}
+        sx={{ width: 35, height: 35 }}
+      />
+      <Typography color='primary' variant="subtitle2" sx={{
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         gap: .5
       }}>
-        <PhoneCallbackRoundedIcon color='primary' />
-        <span>Incoming Call</span>
+        <PhoneCallbackRoundedIcon fontSize="small" color='primary' />
+        <span>Incoming call from {user?.incomingCall?.callerName}</span>
       </Typography>
 
       <Box
@@ -42,10 +66,10 @@ export function IncomingCall() {
           display: 'flex'
         }}
       >
-        <Button variant="contained" color='error' endIcon={<HighlightOffRoundedIcon />} >
+        <Button onClick={cancelCall} variant="contained" color='error' endIcon={<HighlightOffRoundedIcon />} >
           Cancel
         </Button>
-        <Button variant="contained" color='success' endIcon={<CheckCircleOutlineRoundedIcon />}>
+        <Button onClick={acceptCall} variant="contained" color='success' endIcon={<CheckCircleOutlineRoundedIcon />}>
           Accept
         </Button>
       </Box>

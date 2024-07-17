@@ -3,10 +3,11 @@ import { Avatar, Box, Button, IconButton } from "@mui/material";
 import MoreTimeRoundedIcon from '@mui/icons-material/MoreTimeRounded';
 import { useContext, useEffect } from "react";
 import { useModal } from "@/hooks";
-import { SelectGender } from ".";
+import { IncomingCall, SelectGender } from ".";
 import { AuthenticationContext } from "@/providers";
 import { useRouter } from "next/navigation";
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
+import { UserCallStatus } from "@/types";
 
 type IProps = {
   hasBackButton?: boolean;
@@ -24,7 +25,11 @@ export function AppBar({ hasBackButton }: IProps) {
     if (user && !user?.gender) {
       showModal(<SelectGender closeModal={handleModalClose} userId={user.id} />)
     }
-  }, [user])
+
+    if (user && user.incomingCall?.status === UserCallStatus.INCOMING_CALL) {
+      showModal(<IncomingCall user={user} closeModal={handleModalClose} />)
+    }
+  }, [user]);
 
 
   return (
