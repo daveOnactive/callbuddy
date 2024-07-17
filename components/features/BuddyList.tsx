@@ -2,18 +2,40 @@
 import { Box } from "@mui/material";
 import { BuddyCard } from "../molecules";
 import { useContext } from "react";
-import { UsersContext } from "@/providers";
+import { AuthenticationContext, UsersContext } from "@/providers";
 import { useRouter } from "next/navigation";
+import { User, UserCallStatus } from "@/types";
+import { useUpdateDoc } from "@/hooks";
+import { generateRandomId } from "@/helpers";
 
 export function BuddyList() {
 
   const { users } = useContext(UsersContext);
+  const { user: loggedInUser } = useContext(AuthenticationContext);
 
   const { push } = useRouter();
 
-  function handleJoinCall(callId: string) {
-    push(`/incall?joinCallId=${callId}`);
+  const { mutate } = useUpdateDoc('users');
+
+  function handleClick(user: User) {
+    if (user.call === UserCallStatus.CREATE_CALL) {
+      push(`/incall?joinCallId=${user.callId}`);
+    } else {
+      const callId = generateRandomId(12);
+      mutate(user.id, {
+        incomingCall: {
+          status: UserCallStatus.INCOMING_CALL,
+          callerId: loggedInUser?.id,
+          callId,
+          callerName: loggedInUser?.name,
+          callerAvatarUrl: loggedInUser?.avatarUrl
+        }
+      })
+
+      push(`/incall?callId=${callId}&calleeId=${user?.id}`);
+    }
   }
+
 
   return (
     <Box sx={{
@@ -24,7 +46,7 @@ export function BuddyList() {
     }}>
       {
         users?.map(item => (
-          <BuddyCard key={item.id} user={item} onClick={() => handleJoinCall(item.callId)} />
+          <BuddyCard key={item.id} user={item} onClick={() => handleClick(item)} />
         ))
       }
     </Box>

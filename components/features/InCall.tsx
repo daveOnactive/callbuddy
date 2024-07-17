@@ -41,8 +41,6 @@ export function InCall() {
     }
   }, [remoteStream])
 
-  console.log({ remoteStream })
-
   useEffect(() => {
     if (!isJoinCall && localStream && isMounted.current === false) {
       createCall?.();

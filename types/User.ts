@@ -2,6 +2,7 @@ export enum UserCallStatus {
   CREATE_CALL = "CREATE_CALL",
   IN_CALL = "IN_CALL",
   NOT_IN_CALL = "NOT_IN_CALL",
+  INCOMING_CALL = "INCOMING_CALL",
 }
 
 export type User = {
@@ -17,4 +18,11 @@ export type User = {
   lastLogin: string;
   call: UserCallStatus;
   callId: string;
+  incomingCall?: {
+    status: UserCallStatus.INCOMING_CALL;
+    callerId: string;
+    callId: string;
+    callerName: string;
+    callerAvatarUrl: string;
+  };
 };
