@@ -1,11 +1,12 @@
 'use client'
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
-import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from "@/app/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AuthenticationContext } from "./AuthenticationProvider";
 import { UserCallStatus } from "@/types";
 import { useUpdateDoc } from "@/hooks";
+import { generateRandomId } from "@/helpers";
 
 export const CallContext = createContext<Partial<{
   remoteStream: MediaStream;
@@ -44,12 +45,19 @@ export function CallProvider({ children }: PropsWithChildren) {
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>();
 
   const localStreamRef = useRef<HTMLVideoElement>();
+  const callEnded = useRef(false);
 
   const { user } = useContext(AuthenticationContext);
 
   const { mutate } = useUpdateDoc('users');
 
+  const { mutate: mutateCall } = useUpdateDoc('calls');
+
   const { push } = useRouter();
+
+  const params = useSearchParams();
+
+  const callId = params.get('callId') as string;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -103,6 +111,26 @@ export function CallProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
+  async function endCall(id: string) {
+
+    callEnded.current = true;
+    mutate(user?.id as string, {
+      call: UserCallStatus.NOT_IN_CALL
+    });
+
+    mutateCall(id, {
+      answer: '',
+      offer: ''
+    });
+
+    setLocalStream(undefined);
+    setRemoteStream(undefined);
+    setIsMuted(false);
+    setIsBackCamera(false);
+    setIsOffCam(false);
+    push('/home');
+  };
+
   async function createCall(id?: string) {
 
     if (!peerConnection || !user) {
@@ -115,11 +143,12 @@ export function CallProvider({ children }: PropsWithChildren) {
       peerConnection?.addTrack(track, localStream);
     });
 
-    const callRef = doc(db, 'calls', id || user.id);
+    const callRef = doc(db, 'calls', callId);
 
     mutate(user.id, {
-      call: UserCallStatus.CREATE_CALL
-    })
+      call: UserCallStatus.CREATE_CALL,
+      callId: callRef.id,
+    });
 
     const callerCandidatesCollection = collection(callRef, 'callerCandidates');
     const calleeCandidatesCollection = collection(callRef, 'calleeCandidates');
@@ -164,6 +193,10 @@ export function CallProvider({ children }: PropsWithChildren) {
           call: UserCallStatus.IN_CALL
         })
       }
+
+      if (peerConnection.currentRemoteDescription && data && !data.answer && !callEnded.current) {
+        endCall(callId);
+      }
     });
 
     onSnapshot(calleeCandidatesCollection, snapshot => {
@@ -186,8 +219,6 @@ export function CallProvider({ children }: PropsWithChildren) {
     const callRef = doc(db, 'calls', id);
 
     const callSnapshot = await getDoc(callRef);
-
-    console.log('data:', callSnapshot.data())
 
     if (callSnapshot.exists()) {
 
@@ -235,7 +266,15 @@ export function CallProvider({ children }: PropsWithChildren) {
 
       mutate(user.id, {
         call: UserCallStatus.IN_CALL
-      })
+      });
+
+      onSnapshot(callRef, (snapshot) => {
+        const data = snapshot.data();
+
+        if (!data?.offer && !callEnded.current) {
+          endCall(id);
+        }
+      });
 
       onSnapshot(callerCandidatesCollection, (snapshot) => {
         snapshot.docChanges().forEach(async change => {
@@ -250,32 +289,8 @@ export function CallProvider({ children }: PropsWithChildren) {
     }
   };
 
-
   function disconnectStream() {
     localStream?.getTracks().forEach(track => track.stop());
-  };
-
-  async function endCall(id: string) {
-
-    const callRef = doc(db, 'calls', id)
-
-    if (id !== user?.id) {
-      mutate(user?.id as string, {
-        call: UserCallStatus.NOT_IN_CALL
-      });
-    } else {
-      await deleteDoc(callRef);
-      mutate(id as string, {
-        call: UserCallStatus.NOT_IN_CALL
-      });
-    }
-
-    setLocalStream(undefined);
-    setRemoteStream(undefined);
-    setIsMuted(false);
-    setIsBackCamera(false);
-    setIsOffCam(false);
-    push('/home');
   };
 
   function callAudio() {

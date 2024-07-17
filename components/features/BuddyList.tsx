@@ -11,8 +11,8 @@ export function BuddyList() {
 
   const { push } = useRouter();
 
-  function handleJoinCall(userId: string) {
-    push(`/incall?joinCallId=${userId}`);
+  function handleJoinCall(callId: string) {
+    push(`/incall?joinCallId=${callId}`);
   }
 
   return (
@@ -24,7 +24,7 @@ export function BuddyList() {
     }}>
       {
         users?.map(item => (
-          <BuddyCard key={item.id} user={item} onClick={() => handleJoinCall(item.id)} />
+          <BuddyCard key={item.id} user={item} onClick={() => handleJoinCall(item.callId)} />
         ))
       }
     </Box>

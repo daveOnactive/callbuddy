@@ -16,4 +16,5 @@ export type User = {
   gender: string;
   lastLogin: string;
   call: UserCallStatus;
+  callId: string;
 };
