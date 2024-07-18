@@ -52,7 +52,7 @@ export function AppBar({ hasBackButton }: IProps) {
             variant="contained"
             onClick={() => push('/top-up')}
             startIcon={<MoreTimeRoundedIcon />}>
-            {user?.minutesLeft || 0} mins remaining
+            {parseFloat(user?.minutesLeft || '').toFixed(1) || 0} mins remaining
           </Button>
         )
       }
