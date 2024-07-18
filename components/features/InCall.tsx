@@ -1,10 +1,10 @@
 'use client';
 import { Box } from "@mui/material";
 import { CallActions } from "../molecules";
-import { pink } from "@mui/material/colors";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import { CallContext } from "@/providers";
+import { CallTimer } from "../molecules/CallTimer";
 
 export function InCall() {
   const {
@@ -19,7 +19,8 @@ export function InCall() {
     switchCamera,
     endCall,
     localStreamRef,
-    disconnectStream
+    disconnectStream,
+    callTime
   } = useContext(CallContext);
 
   const [windowHeight, setWindowHeight] = useState(0);
@@ -80,6 +81,10 @@ export function InCall() {
     };
   }, []);
 
+  function handleEndCall() {
+    endCall?.(callId || joinCallId)
+  }
+
   const localStreamBoxStyle = {
     position: 'absolute',
     left: 0,
@@ -123,21 +128,9 @@ export function InCall() {
         sx={remoteStream ? localStreamBoxStyle : remoteStreamBoxStyle}
       />
 
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '5%',
-          left: '5%',
-          padding: 1,
-          background: pink[500],
-          borderRadius: 100,
-          fontSize: '.5rem',
-          fontWeight: 'bold',
-          color: 'white'
-        }}
-      >
-        15m
-      </Box>
+      <CallTimer
+        callTime={callTime}
+      />
 
       <CallActions
         actions={{
@@ -147,7 +140,7 @@ export function InCall() {
         toggleMic={callAudio}
         toggleCamera={toggleCamera}
         switchCamera={switchCamera}
-        endCall={() => endCall?.(callId || joinCallId)}
+        endCall={handleEndCall}
       />
     </Box>
   )

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AuthenticationContext } from "./AuthenticationProvider";
 import { UserCallStatus } from "@/types";
 import { useUpdateDoc } from "@/hooks";
-import { generateRandomId } from "@/helpers";
+import { timeConvert } from "@/helpers";
 
 export const CallContext = createContext<Partial<{
   remoteStream: MediaStream;
@@ -18,10 +18,11 @@ export const CallContext = createContext<Partial<{
   isMuted: boolean;
   isOffCam: boolean;
   switchCamera: () => void;
-  endCall: (id: string) => void;
+  endCall: (id: string, time?: number) => void;
   localStreamRef: any;
   remoteStreamRef: any;
   disconnectStream: () => void;
+  callTime: string;
 }>>({});
 
 const configuration = {
@@ -43,6 +44,7 @@ export function CallProvider({ children }: PropsWithChildren) {
   const [isOffCam, setIsOffCam] = useState(false);
   const [isBackCamera, setIsBackCamera] = useState(false);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection>();
+  const [isCallConnected, setIsCallConnected] = useState(false);
 
   const localStreamRef = useRef<HTMLVideoElement>();
   const callEnded = useRef(false);
@@ -58,6 +60,9 @@ export function CallProvider({ children }: PropsWithChildren) {
   const params = useSearchParams();
 
   const callId = params.get('callId') as string;
+  const joinCallId = params.get('joinCallId') as string;
+
+  const [seconds, setSeconds] = useState<number>(0);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -70,7 +75,6 @@ export function CallProvider({ children }: PropsWithChildren) {
       peerConnection?.close();
     }
   }, []);
-
 
   async function openUserMedia(front = true, isStreaming?: boolean) {
     const constraints = {
@@ -111,18 +115,29 @@ export function CallProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  async function endCall(id: string) {
-
+  async function endCall(id: string, callTime?: number) {
     callEnded.current = true;
+
+    const time = callTime || seconds;
+
+    const { fromSecToMin } = timeConvert();
+
+    const minutesLeft = time === 0 ? user?.minutesLeft : `${Number(user?.minutesLeft) - fromSecToMin(time)}`;
+
     mutate(user?.id as string, {
-      call: UserCallStatus.NOT_IN_CALL
+      call: UserCallStatus.NOT_IN_CALL,
+      minutesLeft
     });
+
 
     mutateCall(id, {
       answer: '',
-      offer: ''
+      offer: '',
+      callTime: time,
     });
 
+
+    setIsCallConnected(false);
     setLocalStream(undefined);
     setRemoteStream(undefined);
     setIsMuted(false);
@@ -130,6 +145,35 @@ export function CallProvider({ children }: PropsWithChildren) {
     setIsOffCam(false);
     push('/home');
   };
+
+  const formatTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isCallConnected) {
+      interval = setInterval(() => {
+        setSeconds((seconds) => seconds + 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isCallConnected]);
+
+  useEffect(() => {
+    const { fromMinToSec } = timeConvert();
+
+    if (fromMinToSec(Number(user?.minutesLeft)) === seconds) {
+      endCall(callId || joinCallId);
+    }
+  }, [user, seconds])
 
   async function createCall(id?: string) {
 
@@ -194,8 +238,8 @@ export function CallProvider({ children }: PropsWithChildren) {
         })
       }
 
-      if (peerConnection.currentRemoteDescription && data && !data.answer && !callEnded.current) {
-        endCall(callId);
+      if (peerConnection.currentRemoteDescription && data && !data.answer && !callEnded.current && data.callTime) {
+        endCall(callId, data.callTime);
       }
     });
 
@@ -271,8 +315,8 @@ export function CallProvider({ children }: PropsWithChildren) {
       onSnapshot(callRef, (snapshot) => {
         const data = snapshot.data();
 
-        if (!data?.offer && !callEnded.current) {
-          endCall(id);
+        if (!data?.offer && !callEnded.current && data?.callTime) {
+          endCall(id, data.callTime);
         }
       });
 
@@ -327,6 +371,10 @@ export function CallProvider({ children }: PropsWithChildren) {
 
     peerConnection?.addEventListener('connectionstatechange', () => {
       console.log(`Connection state change: ${peerConnection.connectionState}`);
+
+      if (peerConnection.iceConnectionState === 'connected') {
+        setIsCallConnected(true);
+      }
     });
 
     peerConnection?.addEventListener('signalingstatechange', () => {
@@ -354,7 +402,8 @@ export function CallProvider({ children }: PropsWithChildren) {
         isOffCam,
         endCall,
         localStreamRef,
-        disconnectStream
+        disconnectStream,
+        callTime: formatTime(seconds),
       }}
     >
       {children}
