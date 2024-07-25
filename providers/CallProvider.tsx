@@ -1,8 +1,8 @@
 'use client'
-import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { addDoc, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from "@/app/firebase";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { AuthenticationContext } from "./AuthenticationProvider";
 import { UserCallStatus } from "@/types";
 import { useUpdateDoc } from "@/hooks";
@@ -58,6 +58,8 @@ export function CallProvider({ children }: PropsWithChildren) {
   const { push } = useRouter();
 
   const params = useSearchParams();
+
+  const pathname = usePathname();
 
   const callId = params.get('callId') as string;
   const joinCallId = params.get('joinCallId') as string;
@@ -115,7 +117,7 @@ export function CallProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  async function endCall(id: string, callTime?: number) {
+  const endCall = useCallback(async (id: string, callTime?: number) => {
     callEnded.current = true;
 
     const time = callTime || seconds;
@@ -144,7 +146,35 @@ export function CallProvider({ children }: PropsWithChildren) {
     setIsBackCamera(false);
     setIsOffCam(false);
     push('/home');
-  };
+  }, [seconds, push]);
+
+  useEffect(() => {
+    if (typeof window === undefined) {
+      return;
+    }
+
+    const handleBeforeUnload = (ev: BeforeUnloadEvent) => {
+      ev.preventDefault();
+      sessionStorage.setItem('reloaded', 'true');
+    };
+
+    if (pathname === '/incall') {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [seconds]);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('reloaded') === 'true') {
+      sessionStorage.removeItem('reloaded');
+      peerConnection?.close();
+      localStream?.getTracks().forEach(track => track.stop());
+      push('/home');
+    }
+  }, [push]);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -175,8 +205,35 @@ export function CallProvider({ children }: PropsWithChildren) {
     }
   }, [user, seconds])
 
-  async function createCall(id?: string) {
+  const registerPeerConnectionListeners = useCallback(() => {
+    peerConnection?.addEventListener('icegatheringstatechange', () => {
+      console.log(
+        `ICE gathering state changed: ${peerConnection.iceGatheringState}`);
+    });
 
+    peerConnection?.addEventListener('connectionstatechange', async () => {
+      console.log(`Connection state change: ${peerConnection.connectionState}`);
+
+      if (peerConnection.connectionState === 'connected') {
+        setIsCallConnected(true);
+      }
+
+      if (peerConnection.connectionState === 'disconnected') {
+        push('/home');
+      }
+    });
+
+    peerConnection?.addEventListener('signalingstatechange', () => {
+      console.log(`Signaling state change: ${peerConnection.signalingState}`);
+    });
+
+    peerConnection?.addEventListener('iceconnectionstatechange ', () => {
+      console.log(
+        `ICE connection state change: ${peerConnection.iceConnectionState}`);
+    });
+  }, [peerConnection]);
+
+  const createCall = useCallback(async (id?: string) => {
     if (!peerConnection || !user) {
       return;
     }
@@ -252,10 +309,10 @@ export function CallProvider({ children }: PropsWithChildren) {
         }
       });
     });
+  }, [registerPeerConnectionListeners, peerConnection, user, localStream])
 
-  };
 
-  async function joinCall(id: string) {
+  const joinCall = useCallback(async (id: string) => {
     if (!peerConnection || !user) {
       return;
     }
@@ -331,7 +388,7 @@ export function CallProvider({ children }: PropsWithChildren) {
       })
 
     }
-  };
+  }, [peerConnection, registerPeerConnectionListeners, localStream, user]);
 
   function disconnectStream() {
     localStream?.getTracks().forEach(track => track.stop());
@@ -360,30 +417,6 @@ export function CallProvider({ children }: PropsWithChildren) {
     localStream?.getVideoTracks().forEach((track) => {
       track.enabled = !track.enabled;
       setIsOffCam(!isOffCam);
-    });
-  }
-
-  function registerPeerConnectionListeners() {
-    peerConnection?.addEventListener('icegatheringstatechange', () => {
-      console.log(
-        `ICE gathering state changed: ${peerConnection.iceGatheringState}`);
-    });
-
-    peerConnection?.addEventListener('connectionstatechange', () => {
-      console.log(`Connection state change: ${peerConnection.connectionState}`);
-
-      if (peerConnection.iceConnectionState === 'connected') {
-        setIsCallConnected(true);
-      }
-    });
-
-    peerConnection?.addEventListener('signalingstatechange', () => {
-      console.log(`Signaling state change: ${peerConnection.signalingState}`);
-    });
-
-    peerConnection?.addEventListener('iceconnectionstatechange ', () => {
-      console.log(
-        `ICE connection state change: ${peerConnection.iceConnectionState}`);
     });
   }
 
