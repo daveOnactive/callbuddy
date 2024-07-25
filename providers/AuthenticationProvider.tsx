@@ -3,7 +3,7 @@ import { createContext, PropsWithChildren, useEffect, useRef, useState } from "r
 import { usePathname, useRouter } from 'next/navigation';
 import { User } from "@/types";
 import { useAlert, useSnapshot } from "@/hooks";
-import { getActiveUntil } from "@/helpers";
+import { generateUser, getActiveUntil } from "@/helpers";
 import { useMutation } from "@tanstack/react-query";
 import { Api } from "@/services";
 
@@ -79,10 +79,11 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
 
   function fastLogin() {
 
+    const userNameAndAvatar = generateUser();
+
     const userData: Partial<User> = {
-      name: 'Fire Fox',
+      ...userNameAndAvatar,
       rank: 3,
-      avatarUrl: 'https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg',
       minutesLeft: '2',
       lastLogin: new Date().toISOString(),
     }
