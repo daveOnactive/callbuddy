@@ -214,7 +214,7 @@ export function CallProvider({ children }: PropsWithChildren) {
     peerConnection?.addEventListener('connectionstatechange', async () => {
       console.log(`Connection state change: ${peerConnection.connectionState}`);
 
-      if (peerConnection.connectionState === 'connected') {
+      if (peerConnection.iceConnectionState === 'connected') {
         setIsCallConnected(true);
       }
 
