@@ -3,7 +3,7 @@ import { green, grey, pink, red, yellow } from "@mui/material/colors";
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
 import { User, UserCallStatus } from "@/types";
-import { getActiveUntil } from "@/helpers";
+import { getActiveUntil, getUserRank } from "@/helpers";
 
 type IProp = {
   user?: User;
@@ -102,7 +102,7 @@ export function BuddyCard({ user, onClick }: IProp) {
 
         <Rating sx={{
           my: .5
-        }} name="Rating" value={user?.rank} readOnly />
+        }} name="Rating" value={getUserRank(user?.rank as number || 0)} readOnly />
 
         <Box sx={{
           display: 'flex',
