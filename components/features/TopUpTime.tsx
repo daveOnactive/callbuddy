@@ -8,9 +8,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Api } from "@/services";
 import { Currency, TopUp } from "@/types";
 import { numberFormat } from "@/helpers";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { AuthenticationContext } from "@/providers";
-import PaystackPop from '@paystack/inline-js'
 
 type ITopUpItem = {
   onClick: (topUp: TopUp) => void;
@@ -70,12 +69,6 @@ function TopUpItem({ onClick, data, isDisabled }: ITopUpItem) {
 export function TopUpTime() {
   const { showNotification } = useAlert();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-  }, []);
-
   const { user } = useContext(AuthenticationContext);
 
   const { data, isLoading } = useQuery<TopUp[]>({
@@ -95,9 +88,12 @@ export function TopUpTime() {
       minutes: topUp.mins,
       amount: topUp.price,
     }, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
+        const PaystackPop = (await import('@paystack/inline-js')).default;
         const popup = new PaystackPop()
-        popup.resumeTransaction(data?.data?.access_code)
+        if (popup) {
+          popup.resumeTransaction(data?.data?.access_code);
+        }
       },
       onError: (data) => {
         showNotification({

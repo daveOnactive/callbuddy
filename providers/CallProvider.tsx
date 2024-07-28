@@ -5,7 +5,7 @@ import { db } from "@/app/firebase";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { AuthenticationContext } from "./AuthenticationProvider";
 import { UserCallStatus } from "@/types";
-import { useUpdateDoc } from "@/hooks";
+import { useLowTimeDialog, useUpdateDoc } from "@/hooks";
 import { timeConvert } from "@/helpers";
 
 export const CallContext = createContext<Partial<{
@@ -52,6 +52,8 @@ export function CallProvider({ children }: PropsWithChildren) {
   const { user } = useContext(AuthenticationContext);
 
   const { mutate } = useUpdateDoc('users');
+
+  const { showDialog } = useLowTimeDialog();
 
   const { mutate: mutateCall } = useUpdateDoc('calls');
 
@@ -128,7 +130,8 @@ export function CallProvider({ children }: PropsWithChildren) {
 
     mutate(user?.id as string, {
       call: UserCallStatus.NOT_IN_CALL,
-      minutesLeft
+      minutesLeft,
+      rank: Number(user?.rank) + fromSecToMin(time)
     });
 
 
@@ -202,6 +205,7 @@ export function CallProvider({ children }: PropsWithChildren) {
 
     if (fromMinToSec(Number(user?.minutesLeft)) === seconds) {
       endCall(callId || joinCallId);
+      showDialog?.();
     }
   }, [user, seconds])
 

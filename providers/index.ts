@@ -4,3 +4,4 @@ export * from "./AuthenticationProvider";
 export * from "./UsersProvider";
 export * from "./SnackbarProvider";
 export * from "./QueryProvider";
+export * from "./LowTimeProvider";
