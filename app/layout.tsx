@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "./theme";
-import { AuthenticationProvider, LowTimeProvider, ModalProvider, QueryProvider, SnackbarProvider } from "@/providers";
+import { AuthenticationProvider, BackgroundProvider, LowTimeProvider, ModalProvider, QueryProvider, SnackbarProvider } from "@/providers";
 import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,7 +28,9 @@ export default function RootLayout({
                 <SnackbarProvider>
                   <AuthenticationProvider>
                     <LowTimeProvider>
-                      {children}
+                      <BackgroundProvider>
+                        {children}
+                      </BackgroundProvider>
                     </LowTimeProvider>
                   </AuthenticationProvider>
                 </SnackbarProvider>

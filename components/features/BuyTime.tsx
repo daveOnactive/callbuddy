@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Rating from '@mui/material/Rating';
 import { useContext } from "react";
 import { AuthenticationContext } from "@/providers";
+import { getUserRank } from "@/helpers";
 
 export function BuyTime() {
   const { push } = useRouter();
@@ -24,7 +25,7 @@ export function BuyTime() {
         height: '100%'
       }}>
         <Typography>
-          <span>{user?.minutesLeft} mins left</span>
+          <span>{parseFloat(user?.minutesLeft || '').toFixed(1) || 0} mins left</span>
         </Typography>
         <Button
           sx={{
@@ -44,7 +45,7 @@ export function BuyTime() {
         height: '100%'
       }} variant="outlined">
         <Typography component="legend">Rating</Typography>
-        <Rating name="Rating" value={user?.rank} readOnly />
+        <Rating name="Rating" value={getUserRank(user?.rank as number || 0)} readOnly />
       </Card>
 
     </Box>

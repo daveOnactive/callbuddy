@@ -30,7 +30,7 @@ export function Tabs({ tabs }: IProps) {
           margin: 0,
           fontSize: '0.875rem',
           fontWeight: 'bold',
-          backgroundColor: pink[500],
+          backgroundColor: palette.primary.dark,
           lineHeight: 1.5,
           padding: '8px 12px',
           minHeight: "100%",
@@ -41,14 +41,14 @@ export function Tabs({ tabs }: IProps) {
           boxShadow: `0 2px 1px ${palette.mode === "dark"
             ? "rgba(0, 0, 0, 0.5)"
             : "rgba(45, 45, 60, 0.2)"
-            }, inset 0 1.5px 1px ${pink[400]}, inset 0 -2px 1px ${pink[600]}`,
+            }, inset 0 1.5px 1px ${palette.primary.dark}, inset 0 -2px 1px ${palette.primary.dark}`,
           '&:focus': {
             color: '#fff',
-            outline: `3px solid ${pink[200]}`,
+            outline: `3px solid ${palette.primary.dark}`,
           },
           '&.selected': {
             backgroundColor: '#fff',
-            color: pink[600],
+            color: palette.primary.dark,
           },
           '&.disabled': {
             opacity: 0.5,
@@ -65,7 +65,7 @@ export function Tabs({ tabs }: IProps) {
           },
           '& .Mui-selected': {
             background: '#fff',
-            color: pink[500],
+            color: palette.primary.dark,
             borderRadius: '8px',
             boxShadow: `0 2px 1px ${palette.mode === "dark"
               ? "rgba(0, 0, 0, 0.5)"
