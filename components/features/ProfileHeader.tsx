@@ -1,7 +1,6 @@
 'use client'
 import { Avatar, Box, IconButton, Typography } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
-import { pink } from "@mui/material/colors";
 import { useContext } from "react";
 import { AuthenticationContext } from "@/providers";
 import { useRouter } from "next/navigation";
@@ -20,6 +19,7 @@ export function ProfileHeader() {
           position: 'absolute',
           top: '5%',
           left: '5%',
+          zIndex: 2
         }}
       >
         <ArrowBackIosNewRoundedIcon sx={{ color: 'white' }} />
@@ -38,23 +38,24 @@ export function ProfileHeader() {
           alt={user?.name}
           sx={{
             width: 70,
-            height: 70
+            height: 70,
+            zIndex: 2,
           }}
         />
         <Typography variant="subtitle1" fontWeight='bold'>{user?.name}</Typography>
       </Box>
 
       <Box
-        sx={{
-          background: pink[500],
+        sx={({ palette: { background: { paper } } }) => ({
+          background: paper,
           position: 'absolute',
           top: 0,
           right: 0,
           width: '100%',
           height: '7.5rem',
-          zIndex: -1,
-        }}
+          zIndex: 1,
+        })}
       />
-    </Box>
+    </Box >
   )
 }

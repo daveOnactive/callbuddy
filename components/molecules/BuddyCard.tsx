@@ -1,9 +1,11 @@
 import { Avatar, Box, Button, Card, Rating, Typography } from "@mui/material";
-import { green, grey, pink, red, yellow } from "@mui/material/colors";
+import { blue, green, grey, pink, red, yellow } from "@mui/material/colors";
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
 import { User, UserCallStatus } from "@/types";
 import { getActiveUntil, getUserRank } from "@/helpers";
+import FemaleRoundedIcon from '@mui/icons-material/FemaleRounded';
+import MaleRoundedIcon from '@mui/icons-material/MaleRounded';
 
 type IProp = {
   user?: User;
@@ -36,17 +38,29 @@ export function BuddyCard({ user, onClick }: IProp) {
     [UserCallStatus.NOT_IN_CALL]: 'Call'
   }
 
+  const genderMapper = {
+    'female': <FemaleRoundedIcon
+      sx={{
+        color: pink[600]
+      }}
+    />,
+    'male': <MaleRoundedIcon
+      sx={{
+        color: blue[600]
+      }}
+    />
+  }
+
   const status = getStatus(user) as keyof typeof statusColorMapper;
   return (
     <Card
       sx={(theme) => ({
         width: "100%",
-        background: theme.palette.mode === 'dark' ? grey[900] : '#f7f3f3',
-        border: `1px solid ${theme.palette.mode === 'dark' ? grey[700] : grey[200]}`,
+        background: theme.palette.background.paper,
         borderRadius: '8px',
-        boxShadow: 'none',
         position: 'relative'
       })}
+      variant="outlined"
     >
       <Box sx={(theme) => ({
         width: 28,
@@ -55,7 +69,6 @@ export function BuddyCard({ user, onClick }: IProp) {
         top: 0,
         right: 0,
         zIndex: 1,
-        background: 'white',
         '&::after': {
           content: "''",
           width: 8,
@@ -77,18 +90,18 @@ export function BuddyCard({ user, onClick }: IProp) {
       </Box>
       <Box
         sx={{
-          background: pink[500],
           p: '1rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
       >
-        <Avatar src={user?.avatarUrl} alt={user?.name} />
+        <Avatar sx={({ palette: { primary: { dark } } }) => ({
+          border: `${dark} solid 2px`
+        })} src={user?.avatarUrl} alt={user?.name} />
       </Box>
       <Box p={1}>
         <Typography
-          color='black'
           variant="body2"
           sx={{
             display: 'flex',
@@ -96,7 +109,7 @@ export function BuddyCard({ user, onClick }: IProp) {
             gap: .1
           }}
         >
-          <Face6RoundedIcon color='primary' />
+          {genderMapper[user?.gender as keyof typeof genderMapper]}
           <span>{user?.name}</span>
         </Typography>
 

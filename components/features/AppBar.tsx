@@ -45,7 +45,7 @@ export function AppBar({ hasBackButton }: IProps) {
           <IconButton
             onClick={() => push('/home')}
           >
-            <ArrowBackIosNewRoundedIcon sx={{ color: '#111' }} />
+            <ArrowBackIosNewRoundedIcon color='action' />
           </IconButton>
         ) : (
           <Button
