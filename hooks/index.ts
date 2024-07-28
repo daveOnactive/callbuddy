@@ -3,3 +3,4 @@ export * from "./useSnapshot";
 export * from "./useUpdateDoc";
 export * from "./useSnapshotDocs";
 export * from "./useAlert";
+export * from "./useLowTimeDialog";

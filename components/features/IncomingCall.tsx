@@ -25,15 +25,23 @@ export function IncomingCall({ user, closeModal }: IProps) {
     });
   }
 
-  function acceptCall() {
-    closeModal?.()
-    mutate(user?.id as string, {
-      incomingCall: {
-        status: UserCallStatus.IN_CALL
-      }
-    })
+  const isMinutesLeft = Number(user?.minutesLeft) > 0;
 
-    push(`/incall?joinCallId=${user?.incomingCall?.callId}`);
+  function acceptCall() {
+    closeModal?.();
+    if (isMinutesLeft) {
+      mutate(user?.id as string, {
+        incomingCall: {
+          status: UserCallStatus.IN_CALL
+        }
+      })
+
+      push(`/incall?joinCallId=${user?.incomingCall?.callId}`);
+    } else {
+      cancelCall();
+      push('/top-up');
+    }
+
   }
 
   return (
@@ -70,7 +78,7 @@ export function IncomingCall({ user, closeModal }: IProps) {
           Cancel
         </Button>
         <Button onClick={acceptCall} variant="contained" color='success' endIcon={<CheckCircleOutlineRoundedIcon />}>
-          Accept
+          {isMinutesLeft ? 'Accept' : 'Top up'}
         </Button>
       </Box>
     </Box>

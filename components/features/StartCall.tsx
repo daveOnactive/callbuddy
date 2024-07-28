@@ -1,5 +1,6 @@
 'use client'
 import { generateRandomId } from '@/helpers';
+import { useLowTimeDialog } from '@/hooks';
 import VideoCallRoundedIcon from '@mui/icons-material/VideoCallRounded';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/navigation';
@@ -7,6 +8,7 @@ import { useRouter } from 'next/navigation';
 export function StartCall() {
 
   const { push } = useRouter();
+  const { showDialog } = useLowTimeDialog();
 
   return (
     <Button
@@ -20,7 +22,7 @@ export function StartCall() {
         zIndex: 3
       }}
       onClick={() => {
-        push(`/incall?callId=${generateRandomId(12)}`);
+        showDialog?.(() => push(`/incall?callId=${generateRandomId(12)}`))
       }}
     >
       Start Call

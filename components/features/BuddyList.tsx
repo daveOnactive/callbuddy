@@ -5,7 +5,7 @@ import { useContext } from "react";
 import { AuthenticationContext, UsersContext } from "@/providers";
 import { useRouter } from "next/navigation";
 import { User, UserCallStatus } from "@/types";
-import { useUpdateDoc } from "@/hooks";
+import { useLowTimeDialog, useUpdateDoc } from "@/hooks";
 import { generateRandomId } from "@/helpers";
 
 export function BuddyList() {
@@ -16,6 +16,8 @@ export function BuddyList() {
   const { push } = useRouter();
 
   const { mutate } = useUpdateDoc('users');
+
+  const { showDialog } = useLowTimeDialog();
 
   function handleClick(user: User) {
     if (user.call === UserCallStatus.CREATE_CALL) {
@@ -46,7 +48,13 @@ export function BuddyList() {
     }}>
       {
         users?.map(item => (
-          <BuddyCard key={item.id} user={item} onClick={() => handleClick(item)} />
+          <BuddyCard
+            key={item.id}
+            user={item}
+            onClick={() => {
+              showDialog?.(() => handleClick(item));
+            }}
+          />
         ))
       }
     </Box>
