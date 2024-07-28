@@ -1,21 +1,31 @@
 'use client'
 import { Typography, Box, Button } from "@mui/material";
-import { grey, pink } from "@mui/material/colors";
+import { grey } from "@mui/material/colors";
 import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
-import { useModal } from "@/hooks";
-import { PaymentOptions } from "./PaymentOptions";
-import { useQuery } from "@tanstack/react-query";
+import { useAlert } from "@/hooks";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Api } from "@/services";
 import { Currency, TopUp } from "@/types";
 import { numberFormat } from "@/helpers";
+import { useContext, useEffect } from "react";
+import { AuthenticationContext } from "@/providers";
+import PaystackPop from '@paystack/inline-js'
 
 type ITopUpItem = {
-  onClick: () => void;
+  onClick: (topUp: TopUp) => void;
   data: TopUp;
+  isDisabled?: boolean;
 }
 
-function TopUpItem({ onClick, data }: ITopUpItem) {
+type InitPayment = {
+  name: string;
+  id: string;
+  minutes: string;
+  amount: string;
+}
+
+function TopUpItem({ onClick, data, isDisabled }: ITopUpItem) {
   return (
     <Box
       sx={{
@@ -45,7 +55,12 @@ function TopUpItem({ onClick, data }: ITopUpItem) {
         <LocalOfferRoundedIcon /> 50% off
       </Typography>
 
-      <Button onClick={onClick} variant="contained" size='small'>
+      <Button
+        onClick={() => onClick(data)}
+        variant="contained"
+        size='small'
+        disabled={isDisabled}
+      >
         Purchase
       </Button>
     </Box>
@@ -53,17 +68,43 @@ function TopUpItem({ onClick, data }: ITopUpItem) {
 }
 
 export function TopUpTime() {
-  const { showModal, handleModalClose } = useModal();
+  const { showNotification } = useAlert();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+  }, []);
+
+  const { user } = useContext(AuthenticationContext);
 
   const { data, isLoading } = useQuery<TopUp[]>({
     queryKey: ['top-up'],
     queryFn: async () => (await Api.get('/top-up')).data
   });
 
-  function handleOpen() {
-    showModal(<PaymentOptions onClose={handleModalClose} />, {
-      isFullScreen: true,
-      bgColor: pink[200]
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (data: Partial<InitPayment>) => (await Api.post('/paystack/initialize-payment', data)).data
+  });
+
+  function handleOpen(topUp: TopUp) {
+
+    mutate({
+      name: user?.name,
+      id: user?.id,
+      minutes: topUp.mins,
+      amount: topUp.price,
+    }, {
+      onSuccess: (data) => {
+        const popup = new PaystackPop()
+        popup.resumeTransaction(data?.data?.access_code)
+      },
+      onError: (data) => {
+        showNotification({
+          message: data.message,
+          type: 'error'
+        })
+      },
     })
   }
 
@@ -91,6 +132,7 @@ export function TopUpTime() {
             onClick={handleOpen}
             data={item}
             key={item.id}
+            isDisabled={isPending}
           />
         ))
       }
