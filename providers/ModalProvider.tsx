@@ -62,12 +62,7 @@ export function ModalProvider({ children }: PropsWithChildren) {
             width: { sm: '40% !important', xs: '100% !important' },
             padding: { sm: 3, xs: 2 },
             height: 'fit-content',
-            backgroundColor: theme.palette.mode === 'dark' ? grey[900] : '#fff',
             borderRadius: '8px',
-            boxShadow: theme.palette.mode === 'dark'
-              ? '0px 4px 8px rgb(0 0 0 / 0.7)'
-              : '0px 4px 8px rgb(0 0 0 / 0.1)',
-            color: theme.palette.mode === 'dark' ? grey[100] : grey[700],
           }
         }) : bg}
       >

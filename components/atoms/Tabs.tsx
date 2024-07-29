@@ -1,5 +1,5 @@
 'use client'
-import { Tab, Tabs as MuiTabs } from '@mui/material';
+import { Tab, Tabs as MuiTabs, SxProps, Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import { pink } from '@mui/material/colors';
 import { useState } from 'react';
@@ -9,16 +9,17 @@ type IProps = {
   tabs: {
     title: string;
     content: React.ReactNode;
-  }[]
+  }[];
+  sx?: SxProps<Theme>;
 }
-export function Tabs({ tabs }: IProps) {
+export function Tabs({ tabs, sx }: IProps) {
   const [value, setValue] = useState(0);
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
   return (
-    <Box>
+    <Box sx={sx}>
       <Box
         component={MuiTabs}
         value={value}
@@ -71,6 +72,9 @@ export function Tabs({ tabs }: IProps) {
               ? "rgba(0, 0, 0, 0.5)"
               : "rgba(45, 45, 60, 0.2)"
               }, inset 0 1.5px 1px white, inset 0 -2px 1px white`,
+          },
+          '& .MuiTabs-flexContainer': {
+            justifyContent: 'space-evenly'
           }
         })}
       >
