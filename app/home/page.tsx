@@ -1,4 +1,4 @@
-import { AppBar, BuddyList, StartCall, Tabs } from "@/components";
+import { AppBar, BottomBar, BuddyList, Tabs } from "@/components";
 import { UsersProvider } from "@/providers";
 import { Box } from "@mui/material";
 
@@ -31,8 +31,10 @@ export default function Home() {
         }}
       >
         <AppBar />
-        <Tabs tabs={tabsContent} />
-        <StartCall />
+        <Tabs tabs={tabsContent} sx={{
+          marginBottom: '7rem'
+        }} />
+        <BottomBar />
       </Box>
     </UsersProvider>
   )

@@ -38,7 +38,7 @@ export function SelectGender({ closeModal, userId }: IProp) {
         flexDirection: 'column'
       }}
     >
-      <Typography color='black' variant="h6" textAlign='center' my={2}>Choose Your Gender</Typography>
+      <Typography variant="h6" textAlign='center' my={2}>Choose Your Gender</Typography>
       <Box
         sx={{
           display: 'flex',
@@ -48,14 +48,15 @@ export function SelectGender({ closeModal, userId }: IProp) {
       >
         <Card
           variant="outlined"
-          sx={{
+          sx={({ palette }) => ({
             px: 2,
             py: 4,
             display: 'flex',
             justifyContent: 'center',
             border: gender === 'female' ? `1px solid ${pink[600]}` : 'unset',
-            flexDirection: 'column'
-          }}
+            flexDirection: 'column',
+            background: palette.background.paper
+          })}
           onClick={() => handleSelectGender('female')}
         >
           <FemaleRoundedIcon
