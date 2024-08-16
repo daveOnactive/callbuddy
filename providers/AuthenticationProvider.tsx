@@ -3,7 +3,7 @@ import { createContext, PropsWithChildren, useEffect, useRef, useState } from "r
 import { usePathname, useRouter } from 'next/navigation';
 import { User } from "@/types";
 import { useAlert, useSnapshot } from "@/hooks";
-import { generateUser, getActiveUntil } from "@/helpers";
+import { generateUser } from "@/helpers";
 import { useMutation } from "@tanstack/react-query";
 import { Api } from "@/services";
 
@@ -50,7 +50,9 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
     id: userId
   });
 
-  // const { mutate } = useUpdateDoc('users')
+  const { mutate: mutateUser } = useMutation({
+    mutationFn: async (data: Partial<User>) => await Api.put(`/user/${userId}`, data)
+  })
 
   useEffect(() => {
     if (!userId && pathname !== '/') {
@@ -64,18 +66,13 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  // useEffect(() => {
-  //   const isActive = data && new Date(data.lastLogin) === getActiveUntil(data.lastLogin);
-
-
-  //   if (isMounted.current === false && data && data.lastLogin !== new Date().toISOString()) {
-  //     mutate(data.id, {
-  //       lastLogin: new Date().toISOString()
-  //     });
-
-  //     isMounted.current = true;
-  //   }
-  // }, [data]);
+  useEffect(() => {
+    if (userId) {
+      mutateUser({
+        lastLogin: new Date().toISOString()
+      });
+    }
+  }, [userId]);
 
   function fastLogin() {
 
@@ -83,8 +80,8 @@ export function AuthenticationProvider({ children }: PropsWithChildren) {
 
     const userData: Partial<User> = {
       ...userNameAndAvatar,
-      rank: 3,
-      minutesLeft: '2',
+      rank: 0,
+      minutesLeft: '1',
       lastLogin: new Date().toISOString(),
     }
 
