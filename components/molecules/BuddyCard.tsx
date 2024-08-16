@@ -3,7 +3,7 @@ import { blue, green, grey, pink, red, yellow } from "@mui/material/colors";
 import Face6RoundedIcon from '@mui/icons-material/Face6Rounded';
 import AddIcCallRoundedIcon from '@mui/icons-material/AddIcCallRounded';
 import { User, UserCallStatus } from "@/types";
-import { getActiveUntil, getUserRank } from "@/helpers";
+import { getUserRank } from "@/helpers";
 import FemaleRoundedIcon from '@mui/icons-material/FemaleRounded';
 import MaleRoundedIcon from '@mui/icons-material/MaleRounded';
 
@@ -14,14 +14,21 @@ type IProp = {
 
 function getStatus(user?: User) {
   if (!user) return;
+  const onlineTimeout = 60 * 60 * 1000;
 
-  const activeUntil = getActiveUntil(user.lastLogin);
+  const now = new Date().getTime();
 
-  if (user.incall) return 'incall';
+  const lastLogin = new Date(user.lastLogin).getTime() + onlineTimeout;
 
-  if (activeUntil) return 'active';
+  const isOffline = now >= lastLogin;
 
-  return 'offline';
+  if (isOffline) {
+    return 'offline';
+  }
+
+  if (user.call === UserCallStatus.IN_CALL) return 'incall';
+
+  return 'active';
 }
 
 export function BuddyCard({ user, onClick }: IProp) {

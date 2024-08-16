@@ -27,7 +27,7 @@ export function UsersProvider({ children }: PropsWithChildren) {
     try {
       const dataRef = collection(db, 'users');
 
-      const ref = query(dataRef, orderBy('lastLogin', 'asc'))
+      const ref = query(dataRef, orderBy('lastLogin', 'desc'))
 
       onSnapshot(ref, async (snapshot) => {
         try {
