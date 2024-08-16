@@ -3,7 +3,7 @@ import { useModal } from "@/hooks";
 import { Box, Button, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { createContext, PropsWithChildren } from "react";
-import TimelapseRoundedIcon from '@mui/icons-material/TimelapseRounded';
+import HourglassDisabledRoundedIcon from '@mui/icons-material/HourglassDisabledRounded';
 import { red } from "@mui/material/colors";
 
 export const LowTimeContext = createContext<{
@@ -23,11 +23,11 @@ export function LowTimeProvider({ children }: PropsWithChildren) {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <TimelapseRoundedIcon sx={{
+        <HourglassDisabledRoundedIcon sx={{
           color: red[500],
           fontSize: '2rem',
         }} />
-        <Typography my={2} variant="body1">Opp you have run out of call time.</Typography>
+        <Typography my={2} variant="body1">It seems your call time has ended.</Typography>
         <Button
           variant="contained"
           color='primary'
