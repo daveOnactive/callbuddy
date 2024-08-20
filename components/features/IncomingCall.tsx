@@ -6,6 +6,7 @@ import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
 import { useUpdateDoc } from "@/hooks";
 import { useRouter } from "next/navigation";
 import { User, UserCallStatus } from "@/types";
+import { useEffect, useRef } from "react";
 
 type IProps = {
   user: User;
@@ -16,8 +17,24 @@ export function IncomingCall({ user, closeModal }: IProps) {
 
   const { push } = useRouter();
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current?.paused) {
+      audioRef?.current?.play();
+    }
+  }, [audioRef.current]);
+
+  function stopSound() {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }
+
   function cancelCall() {
-    closeModal?.()
+    stopSound();
+    closeModal?.();
     mutate(user?.id as string, {
       incomingCall: {
         status: UserCallStatus.NOT_IN_CALL
@@ -28,6 +45,7 @@ export function IncomingCall({ user, closeModal }: IProps) {
   const isMinutesLeft = Number(user?.minutesLeft) > 0;
 
   function acceptCall() {
+    stopSound();
     closeModal?.();
     if (isMinutesLeft) {
       mutate(user?.id as string, {
@@ -44,6 +62,7 @@ export function IncomingCall({ user, closeModal }: IProps) {
 
   }
 
+
   return (
     <Box sx={{
       display: 'flex',
@@ -58,14 +77,21 @@ export function IncomingCall({ user, closeModal }: IProps) {
         src={user?.incomingCall?.callerAvatarUrl}
         sx={{ width: 35, height: 35 }}
       />
-      <Typography color='primary' variant="subtitle2" sx={{
+      <Typography variant="subtitle2" sx={{
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         gap: .5
       }}>
-        <PhoneCallbackRoundedIcon fontSize="small" color='primary' />
-        <span>Incoming call from {user?.incomingCall?.callerName}</span>
+        <PhoneCallbackRoundedIcon fontSize="small" color='success' />
+        <span>Incoming call from</span>
+      </Typography>
+      <Typography variant="subtitle2" sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <strong>{user?.incomingCall?.callerName}</strong>
       </Typography>
 
       <Box
@@ -81,6 +107,10 @@ export function IncomingCall({ user, closeModal }: IProps) {
           {isMinutesLeft ? 'Accept' : 'Top up'}
         </Button>
       </Box>
+      <audio loop autoPlay ref={audioRef}>
+        <source src='/audio/ringing.mp3' type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
     </Box>
   )
 }
