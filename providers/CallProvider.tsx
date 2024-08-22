@@ -103,11 +103,9 @@ export function CallProvider({ children }: PropsWithChildren) {
       localStreamRef.current.srcObject = stream;
     }
 
-    if (isStreaming && peerConnection) {
-      stream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, stream);
-      });
-    }
+    stream.getTracks().forEach(track => {
+      peerConnection?.addTrack(track, stream);
+    });
   }
 
   useEffect(() => {
