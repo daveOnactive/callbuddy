@@ -97,6 +97,15 @@ export function CallProvider({ children }: PropsWithChildren) {
       });
     }
 
+    const sender = peerConnection?.getSenders().find(s => s?.track?.kind === 'video');
+    if (sender) {
+      sender.replaceTrack(stream.getVideoTracks()[0]);
+    }
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+    }
+
     setLocalStream(stream);
 
     if (localStreamRef?.current) {
@@ -405,10 +414,6 @@ export function CallProvider({ children }: PropsWithChildren) {
 
   async function switchCamera() {
     if (isOffCam) return;
-
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-    }
 
     await openUserMedia(isBackCamera);
 
