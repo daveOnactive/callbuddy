@@ -104,7 +104,7 @@ export function CallProvider({ children }: PropsWithChildren) {
     const videoTrack = stream.getVideoTracks()[0];
 
     const sender = peerConnection?.getSenders().find(s => s?.track?.kind === 'video');
-    if (sender) {
+    if (sender && isBackCamera) {
       sender.replaceTrack(stream.getVideoTracks()[0]);
     } else {
       peerConnection?.addTrack(videoTrack, stream);
@@ -419,9 +419,8 @@ export function CallProvider({ children }: PropsWithChildren) {
   async function switchCamera() {
     if (isOffCam) return;
 
-    await openUserMedia(isBackCamera);
-
     setIsBackCamera(!isBackCamera);
+    await openUserMedia(isBackCamera);
   }
 
   function toggleCamera() {
