@@ -97,13 +97,17 @@ export function CallProvider({ children }: PropsWithChildren) {
       });
     }
 
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+    }
+
+    const videoTrack = stream.getVideoTracks()[0];
+
     const sender = peerConnection?.getSenders().find(s => s?.track?.kind === 'video');
     if (sender) {
       sender.replaceTrack(stream.getVideoTracks()[0]);
-    }
-
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
+    } else {
+      peerConnection?.addTrack(videoTrack, stream);
     }
 
     setLocalStream(stream);
