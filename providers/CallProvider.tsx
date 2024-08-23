@@ -89,6 +89,11 @@ export function CallProvider({ children }: PropsWithChildren) {
         autoGainControl: true,
       },
     };
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
     if (isMuted) {
@@ -97,15 +102,11 @@ export function CallProvider({ children }: PropsWithChildren) {
       });
     }
 
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-    }
-
     const videoTrack = stream.getVideoTracks()[0];
 
     const sender = peerConnection?.getSenders().find(s => s?.track?.kind === 'video');
-    if (sender && isBackCamera) {
-      sender.replaceTrack(stream.getVideoTracks()[0]);
+    if (sender) {
+      sender.replaceTrack(videoTrack);
     } else {
       peerConnection?.addTrack(videoTrack, stream);
     }
