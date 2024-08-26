@@ -212,14 +212,14 @@ export function CallProvider({ children }: PropsWithChildren) {
     };
   }, [isCallConnected]);
 
-  useEffect(() => {
-    const { fromMinToSec } = timeConvert();
+  const { fromMinToSec } = timeConvert();
 
+  useEffect(() => {
     if (fromMinToSec(Number(user?.minutesLeft)) === seconds) {
       endCall(callId || joinCallId);
       showDialog?.();
     }
-  }, [user, seconds])
+  }, [user, seconds, fromMinToSec])
 
   const registerPeerConnectionListeners = useCallback(() => {
     peerConnection?.addEventListener('icegatheringstatechange', () => {
