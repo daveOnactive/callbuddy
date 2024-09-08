@@ -1,6 +1,5 @@
-import { db } from "@/app/firebase";
+import { updateUserMins } from "@/services";
 import { StatusCode } from "@/types";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export async function POST(req: Request) {
   try {
@@ -14,16 +13,7 @@ export async function POST(req: Request) {
       const metadataString = metadataMatch[1];
       const metadata = JSON.parse(metadataString);
 
-      const userRef = doc(db, "users", metadata.id);
-
-      const user = (await getDoc(userRef)).data();
-
-      const minutesLeft = Number(user?.minutesLeft) + Number(metadata.minutes);
-
-      await updateDoc(userRef, {
-        ...user,
-        minutesLeft,
-      });
+      await updateUserMins(metadata);
     }
     return Response.json("Transaction completed");
   } catch (err: any) {
