@@ -6,15 +6,25 @@ import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
 import { useAlert } from "@/hooks";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Api } from "@/services";
-import { Currency, TopUp } from "@/types";
-import { numberFormat } from "@/helpers";
-import { useContext } from "react";
+import { Currency, TopUp, User } from "@/types";
+import { generateTextRef, numberFormat } from "@/helpers";
+import { useContext, useState } from "react";
 import { AuthenticationContext } from "@/providers";
+import Tab from '@mui/material/Tab';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import { useFlutterwave } from 'flutterwave-react-v3';
+import { FlutterwaveConfig } from "flutterwave-react-v3/dist/types";
+import { useRouter } from "next/navigation";
 
 type ITopUpItem = {
   onClick: (topUp: TopUp) => void;
   data: TopUp;
   isDisabled?: boolean;
+  currency: Currency;
+  isUSD?: boolean;
+  user?: User;
 }
 
 type InitPayment = {
@@ -24,7 +34,33 @@ type InitPayment = {
   amount: string;
 }
 
-function TopUpItem({ onClick, data, isDisabled }: ITopUpItem) {
+function TopUpItem({ onClick, data, isDisabled, currency, isUSD, user }: ITopUpItem) {
+  const { push } = useRouter();
+
+  const config = {
+    meta: {
+      userId: user?.id,
+      minutes: data?.mins,
+    },
+    customer: {
+      name: user?.name,
+      email: `${user?.name.replace(' ', '+')}@callbuddy.live`,
+      userId: user?.id,
+    },
+    customizations: {
+      title: "CallBuddy",
+      description: "1-on-1 call platform",
+      logo: "https://checkout.flutterwave.com/assets/img/rave-logo.png",
+    },
+    public_key: "FLWPUBK_TEST-9703c265d81bce2567a32dad2432ca2c-X",
+    tx_ref: generateTextRef(),
+    amount: data?.price,
+    currency: "USD",
+    payment_options: "card, account, googlepay, applepay",
+  } as unknown as FlutterwaveConfig;
+
+  const handleFlutterPayment = useFlutterwave(config);
+
   return (
     <Box
       sx={{
@@ -41,12 +77,12 @@ function TopUpItem({ onClick, data, isDisabled }: ITopUpItem) {
 
       <Box>
         <Typography variant="subtitle2">
-          {numberFormat(Number(data.price), Currency.NGN)}
+          {numberFormat(Number(data.price), currency)}
         </Typography>
         <Typography sx={{
           textDecoration: 'line-through'
         }} variant="subtitle2" fontWeight={100}>
-          {numberFormat(Number(data.discount), Currency.NGN)}
+          {numberFormat(Number(data.discount), currency)}
         </Typography>
       </Box>
 
@@ -55,7 +91,12 @@ function TopUpItem({ onClick, data, isDisabled }: ITopUpItem) {
       </Typography>
 
       <Button
-        onClick={() => onClick(data)}
+        onClick={() => isUSD ? handleFlutterPayment({
+          callback: (_res) => {
+            push('/home')
+          },
+          onClose: () => { }
+        }) : onClick(data)}
         variant="contained"
         size='small'
         disabled={isDisabled}
@@ -69,11 +110,24 @@ function TopUpItem({ onClick, data, isDisabled }: ITopUpItem) {
 export function TopUpTime() {
   const { showNotification } = useAlert();
 
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  const [value, setValue] = useState('ngn');
+
+  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
+    setValue(newValue);
+  };
+
   const { user } = useContext(AuthenticationContext);
 
   const { data, isLoading } = useQuery<TopUp[]>({
     queryKey: ['top-up'],
     queryFn: async () => (await Api.get('/top-up')).data
+  });
+
+  const { data: topUpUsd } = useQuery<TopUp[]>({
+    queryKey: ['top-up-usd'],
+    queryFn: async () => (await Api.get('/top-up-usd')).data
   });
 
   const { mutate, isPending } = useMutation({
@@ -104,6 +158,11 @@ export function TopUpTime() {
     })
   }
 
+
+  function handlePayUsd(_topUp: TopUp) {
+    setIsDisabled(true)
+  }
+
   if (isLoading) return <>loading...</>
 
   return (
@@ -122,16 +181,47 @@ export function TopUpTime() {
         <LocalMallRoundedIcon /><span>Top up Mins</span>
       </Typography>
 
-      {
-        data?.map(item => (
-          <TopUpItem
-            onClick={handleOpen}
-            data={item}
-            key={item.id}
-            isDisabled={isPending}
-          />
-        ))
-      }
+      <TabContext value={value}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <TabList sx={{
+            '& .MuiTabs-flexContainer': {
+              justifyContent: 'center'
+            }
+          }} onChange={handleChange} aria-label="lab API tabs example">
+            <Tab label="NGN" value="ngn" />
+            <Tab label="USD" value="usd" />
+          </TabList>
+        </Box>
+        <TabPanel value="ngn">
+          {
+            data?.map(item => (
+              <TopUpItem
+                onClick={handleOpen}
+                data={item}
+                key={item.id}
+                isDisabled={isPending}
+                currency={Currency.NGN}
+                user={user}
+              />
+            ))
+          }
+        </TabPanel>
+        <TabPanel value="usd">
+          {
+            topUpUsd?.map(item => (
+              <TopUpItem
+                onClick={handlePayUsd}
+                data={item}
+                key={item.id}
+                isDisabled={isDisabled}
+                currency={Currency.USD}
+                isUSD
+                user={user}
+              />
+            ))
+          }
+        </TabPanel>
+      </TabContext>
     </Box>
   )
 }

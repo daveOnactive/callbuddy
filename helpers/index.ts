@@ -3,3 +3,4 @@ export * from "./generateRandomId";
 export * from "./timeConvert";
 export * from "./generateUser";
 export * from "./getUserRank";
+export * from "./generateTextRef";
