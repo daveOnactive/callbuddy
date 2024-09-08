@@ -178,8 +178,6 @@ export function CallProvider({ children }: PropsWithChildren) {
 
       updateUserInfo(seconds);
       mutateCall(callId || joinCallId, {
-        answer: '',
-        offer: '',
         callTime: seconds,
       });
     };
