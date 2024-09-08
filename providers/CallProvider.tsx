@@ -131,11 +131,7 @@ export function CallProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  const endCall = useCallback(async (id: string, callTime?: number) => {
-    callEnded.current = true;
-
-    const time = callTime || seconds;
-
+  function updateUserInfo(time: number) {
     const { fromSecToMin } = timeConvert();
 
     const minutesLeft = time === 0 ? user?.minutesLeft : `${Number(user?.minutesLeft) - fromSecToMin(time)}`;
@@ -145,6 +141,14 @@ export function CallProvider({ children }: PropsWithChildren) {
       minutesLeft,
       rank: Number(user?.rank) + fromSecToMin(time)
     });
+  }
+
+  const endCall = useCallback(async (id: string, callTime?: number) => {
+    callEnded.current = true;
+
+    const time = callTime || seconds;
+
+    updateUserInfo(time);
 
 
     mutateCall(id, {
@@ -171,6 +175,13 @@ export function CallProvider({ children }: PropsWithChildren) {
     const handleBeforeUnload = (ev: BeforeUnloadEvent) => {
       ev.preventDefault();
       sessionStorage.setItem('reloaded', 'true');
+
+      updateUserInfo(seconds);
+      mutateCall(callId || joinCallId, {
+        answer: '',
+        offer: '',
+        callTime: seconds,
+      });
     };
 
     if (pathname === '/incall') {
