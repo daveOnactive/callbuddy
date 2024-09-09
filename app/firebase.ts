@@ -14,8 +14,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_APP_ID,
 };
 
-console.log({ firebaseConfig: process.env });
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const db = initializeFirestore(app, {});
