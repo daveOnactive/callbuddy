@@ -12,12 +12,25 @@ export function Login() {
   return (
     <Box
       sx={{
-        background: 'rgb(244, 143, 177, 50%)',
         height: '100vh',
         width: '100%',
         p: 0,
       }}
     >
+      <Box
+        sx={({ palette: { primary: { main } } }) => ({
+          background: main,
+          height: '100vh',
+          width: '100%',
+          p: 0,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          opacity: .5,
+          zIndex: 1
+        })}
+      />
+
       <Box
         component='video'
         muted
@@ -32,11 +45,10 @@ export function Login() {
           minWidth: '100%',
           left: 0,
           top: 0,
-          zIndex: -1,
           objectFit: 'contain'
         }}
       >
-        <source src="" type="video/mp4" />
+        <source src="/video/bg.mp4" type="video/mp4" />
       </Box>
       <Box
         sx={{
@@ -46,7 +58,9 @@ export function Login() {
           alignItems: 'center',
           flexDirection: 'column',
           mx: 'auto',
-          height: "100%"
+          height: "100%",
+          zIndex: 2,
+          position: 'relative'
         }}
       >
         <Image
@@ -62,9 +76,8 @@ export function Login() {
           sx={{
             mx: 'auto',
             display: 'flex',
-            width: '80%'
+            width: '50%'
           }}
-          fullWidth
           size="large"
           variant="contained"
           onClick={fastLogin}
