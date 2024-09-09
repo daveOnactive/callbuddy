@@ -91,7 +91,7 @@ function TopUpItem({ onClick, data, isDisabled, currency, isUSD, user }: ITopUpI
       description: "1-on-1 call platform",
       logo: "https://checkout.flutterwave.com/assets/img/rave-logo.png",
     },
-    public_key: "FLWPUBK_TEST-9703c265d81bce2567a32dad2432ca2c-X",
+    public_key: process.env.NEXT_PUBLIC_PUBLIC_KEY,
     tx_ref: generateTextRef(),
     amount: data?.price,
     currency: "USD",
