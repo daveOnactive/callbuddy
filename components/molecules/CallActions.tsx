@@ -14,9 +14,10 @@ type IProps = {
   toggleCamera?: () => void;
   switchCamera?: () => void;
   endCall?: () => void;
+  isHidden?: boolean;
 }
 
-export function CallActions({ actions: { isMuted, isOffCam }, toggleMic, toggleCamera, switchCamera, endCall }: IProps) {
+export function CallActions({ actions: { isMuted, isOffCam }, toggleMic, toggleCamera, switchCamera, endCall, isHidden }: IProps) {
   return (
     <Box
       sx={{
@@ -30,7 +31,9 @@ export function CallActions({ actions: { isMuted, isOffCam }, toggleMic, toggleC
         borderRadius: '8px',
         left: '50%',
         transform: 'translateX(-50%)',
-        p: 1
+        p: 1,
+        opacity: isHidden ? 0 : 1,
+        transition: 'opacity .5sec'
       }}
     >
       <IconButton

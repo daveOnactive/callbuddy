@@ -27,6 +27,8 @@ export function InCall() {
 
   const isMounted = useRef(false);
 
+  const [isHidden, setIsHidden] = useState(false);
+
   const params = useSearchParams();
 
   const remoteStreamRef = useRef<HTMLVideoElement>();
@@ -37,10 +39,24 @@ export function InCall() {
   const isJoinCall = !!joinCallId;
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsHidden(true);
+    }, 10000);
+
+    document.addEventListener('click', () => {
+      setIsHidden(false);
+    })
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [isHidden]);
+
+  useEffect(() => {
     if (remoteStreamRef.current && remoteStream) {
       remoteStreamRef.current.srcObject = remoteStream;
     }
-  }, [remoteStream])
+  }, [remoteStream]);
 
   useEffect(() => {
     if (!isJoinCall && localStream && isMounted.current === false) {
@@ -141,6 +157,7 @@ export function InCall() {
         toggleCamera={toggleCamera}
         switchCamera={switchCamera}
         endCall={handleEndCall}
+        isHidden={isHidden}
       />
 
       {
