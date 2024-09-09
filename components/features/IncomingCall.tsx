@@ -14,6 +14,7 @@ type IProps = {
 }
 export function IncomingCall({ user, closeModal }: IProps) {
   const { mutate } = useUpdateDoc('users');
+  const { mutate: mutateCalls } = useUpdateDoc('calls');
 
   const { push } = useRouter();
 
@@ -40,6 +41,10 @@ export function IncomingCall({ user, closeModal }: IProps) {
         status: UserCallStatus.NOT_IN_CALL
       }
     });
+
+    mutateCalls(user?.incomingCall?.callId as string, {
+      offer: '',
+    })
   }
 
   const isMinutesLeft = Number(user?.minutesLeft) > 0;

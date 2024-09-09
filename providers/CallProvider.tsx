@@ -5,7 +5,7 @@ import { db } from "@/app/firebase";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { AuthenticationContext } from "./AuthenticationProvider";
 import { UserCallStatus } from "@/types";
-import { useLowTimeDialog, useUpdateDoc } from "@/hooks";
+import { useAlert, useLowTimeDialog, useUpdateDoc } from "@/hooks";
 import { timeConvert } from "@/helpers";
 
 export const CallContext = createContext<Partial<{
@@ -58,6 +58,8 @@ export function CallProvider({ children }: PropsWithChildren) {
   const { mutate: mutateCall } = useUpdateDoc('calls');
 
   const { push } = useRouter();
+
+  const { showNotification } = useAlert();
 
   const params = useSearchParams();
 
@@ -322,6 +324,14 @@ export function CallProvider({ children }: PropsWithChildren) {
 
       if (peerConnection.currentRemoteDescription && data && !data.answer && !callEnded.current && data.callTime) {
         endCall(callId, data.callTime);
+      }
+
+      if (!peerConnection.currentRemoteDescription && data && !data.offer && !data.answer) {
+        endCall(callId);
+        showNotification({
+          type: 'info',
+          message: 'Buddy declined the call!'
+        })
       }
     });
 
