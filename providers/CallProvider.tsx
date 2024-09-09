@@ -330,7 +330,7 @@ export function CallProvider({ children }: PropsWithChildren) {
         endCall(callId);
         showNotification({
           type: 'info',
-          message: 'Buddy declined the call!'
+          message: 'Call declined!'
         })
       }
     });
