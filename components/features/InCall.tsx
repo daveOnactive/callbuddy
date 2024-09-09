@@ -1,5 +1,5 @@
 'use client';
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { CallActions } from "../molecules";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
@@ -142,6 +142,19 @@ export function InCall() {
         switchCamera={switchCamera}
         endCall={handleEndCall}
       />
+
+      {
+        !remoteStream ? (
+          <Typography variant="body1" sx={{
+            position: 'absolute',
+            top: '50%',
+            textAlign: 'center',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: "100%"
+          }}>Waiting for your buddy to join the call...</Typography>
+        ) : null
+      }
     </Box>
   )
 }
