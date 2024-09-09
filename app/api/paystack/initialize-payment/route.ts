@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_AUTHORIZATION_KEY}`,
+          Authorization: `Bearer ${process.env.AUTHORIZATION_KEY}`,
           "Content-Type": "application/json",
         },
       },
