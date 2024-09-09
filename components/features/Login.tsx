@@ -48,7 +48,7 @@ export function Login() {
           objectFit: 'contain'
         }}
       >
-        <source src="/video/bg.mp4" type="video/mp4" />
+        <source src="" type="video/mp4" />
       </Box>
       <Box
         sx={{
