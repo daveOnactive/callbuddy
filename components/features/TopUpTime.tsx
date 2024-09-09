@@ -1,5 +1,5 @@
 'use client'
-import { Typography, Box, Button } from "@mui/material";
+import { Typography, Box, Button, Skeleton } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
@@ -32,6 +32,45 @@ type InitPayment = {
   id: string;
   minutes: string;
   amount: string;
+}
+
+function TopUpSkeleton() {
+  return (
+    <>
+      <Skeleton
+        width='100%'
+        height={65}
+        sx={{
+          my: 1.5
+        }}
+        variant="rounded"
+      />
+      <Skeleton
+        width='100%'
+        height={65}
+        sx={{
+          my: 1.5
+        }}
+        variant="rounded"
+      />
+      <Skeleton
+        width='100%'
+        height={65}
+        sx={{
+          my: 1.5
+        }}
+        variant="rounded"
+      />
+      <Skeleton
+        width='100%'
+        height={65}
+        sx={{
+          my: 1.5
+        }}
+        variant="rounded"
+      />
+    </>
+  )
 }
 
 function TopUpItem({ onClick, data, isDisabled, currency, isUSD, user }: ITopUpItem) {
@@ -163,8 +202,6 @@ export function TopUpTime() {
     setIsDisabled(true)
   }
 
-  if (isLoading) return <>loading...</>
-
   return (
     <Box>
       <Typography
@@ -178,7 +215,7 @@ export function TopUpTime() {
           my: 2
         }}
       >
-        <LocalMallRoundedIcon /><span>Top up Mins</span>
+        <LocalMallRoundedIcon /><span>Top Up Call Time</span>
       </Typography>
 
       <TabContext value={value}>
@@ -193,33 +230,41 @@ export function TopUpTime() {
           </TabList>
         </Box>
         <TabPanel value="ngn">
-          {
-            data?.map(item => (
-              <TopUpItem
-                onClick={handleOpen}
-                data={item}
-                key={item.id}
-                isDisabled={isPending}
-                currency={Currency.NGN}
-                user={user}
-              />
-            ))
-          }
+          <>
+            {
+              isLoading ? (
+                <TopUpSkeleton />
+              ) : data?.map(item => (
+                <TopUpItem
+                  onClick={handleOpen}
+                  data={item}
+                  key={item.id}
+                  isDisabled={isPending}
+                  currency={Currency.NGN}
+                  user={user}
+                />
+              ))
+            }
+          </>
         </TabPanel>
         <TabPanel value="usd">
-          {
-            topUpUsd?.map(item => (
-              <TopUpItem
-                onClick={handlePayUsd}
-                data={item}
-                key={item.id}
-                isDisabled={isDisabled}
-                currency={Currency.USD}
-                isUSD
-                user={user}
-              />
-            ))
-          }
+          <>
+            {
+              isLoading ? (
+                <TopUpSkeleton />
+              ) : topUpUsd?.map(item => (
+                <TopUpItem
+                  onClick={handlePayUsd}
+                  data={item}
+                  key={item.id}
+                  isDisabled={isDisabled}
+                  currency={Currency.USD}
+                  isUSD
+                  user={user}
+                />
+              ))
+            }
+          </>
         </TabPanel>
       </TabContext>
     </Box>
